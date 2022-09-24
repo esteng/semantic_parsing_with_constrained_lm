@@ -22,7 +22,7 @@ from transformers import PreTrainedModel, Trainer, TrainingArguments
 
 import semantic_parsing_with_constrained_lm
 from semantic_parsing_with_constrained_lm.util import logger
-from semantic_parsing_with_constrained_lm.datum import FullDatum
+from semantic_parsing_with_constrained_lm.datum import FullDatum, BenchClampDatum
 from semantic_parsing_with_constrained_lm.lm import Seq2SeqSettings
 from semantic_parsing_with_constrained_lm.run_exp import filter_exp_dict
 from semantic_parsing_with_constrained_lm.tokenization import ClampTokenizer
@@ -91,8 +91,16 @@ class TrainExperiment:
     is_encoder_decoder: bool
     training_args: TrainingArguments
     log_dir: Path
+    reversed: bool = False
 
     def make_clamp_dataset(self, data: Sequence[FullDatum]) -> "ClampDataset":
+        if reversed:
+            return ReverseClampDataset(
+                data=data,
+                tokenizer=self.tokenizer,
+                is_encoder_decoder=self.is_encoder_decoder,
+                seq2seq_settings=self.seq2seq_settings
+            )
         return ClampDataset(
             data=data,
             tokenizer=self.tokenizer,
@@ -154,7 +162,44 @@ class ClampDataset(Dataset):
             }
         self.cache[idx] = result
         return result
+@dataclass
+class ReverseClampDataset(ClampDataset):
+    def __getitem__(self, idx: int) -> Dict[str, Any]:
+        cached = self.cache.get(idx)
+        if cached is not None:
+            return cached
 
+        datum = self.data[idx]
+        input = (
+            datum.canonical 
+        )
+        input_token_ids = (
+            self.tokenizer.encode(input)
+        )
+        output = (
+            datum.natural 
+        )
+
+        output_token_ids = (
+            self.seq2seq_settings.output_surround.bos
+            + self.tokenizer.encode(output)
+            + self.seq2seq_settings.output_surround.eos
+        )
+        if self.is_encoder_decoder:
+            result = {
+                "input_ids": input_token_ids,
+                "labels": output_token_ids,
+                "length": len(input_token_ids),
+            }
+        else:
+            result = {
+                "input_ids": input_token_ids + output_token_ids,
+                # -100 is ignored while computing loss
+                "labels": [-100] * len(input_token_ids) + output_token_ids,
+                "length": len(input_token_ids),
+            }
+        self.cache[idx] = result
+        return result
 
 def reset_gpu_stats(msg: str) -> None:
     print(msg)
