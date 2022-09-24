@@ -22,6 +22,7 @@ def calflow_to_datum_format(
     """
     data_list = []
     smcalflow_cache_path = user_cache_dir("semantic_parsing_as_constrained_lm")
+    # import pdb; pdb.set_trace()
     for calflow_dialogue in dialogues_from_calflow_textio(
         BlobFile(calflow_data_file, streaming=False, cache_dir=smcalflow_cache_path)
     ):

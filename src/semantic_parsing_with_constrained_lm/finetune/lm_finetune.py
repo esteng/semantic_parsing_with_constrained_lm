@@ -4,6 +4,7 @@
 """ Finetunes language models for CLAMP task using transformers Trainer interface. """
 import dataclasses
 import glob
+import pdb 
 import importlib
 import os
 import pathlib
@@ -70,11 +71,14 @@ class DataCollatorForSeq2Seq:
         for labels in labels_list:
             # -100 will remove the labels from loss computation
             padded_labels.append(labels + [-100] * (max_labels_length - len(labels)))
-        return {
-            "input_ids": tensor(padded_input_ids, dtype=torch.long),
-            "labels": tensor(padded_labels, dtype=torch.long),
-            "attention_mask": tensor(attention_mask, dtype=torch.long),
-        }
+        try:
+            return {
+                "input_ids": tensor(padded_input_ids, dtype=torch.long),
+                "labels": tensor(padded_labels, dtype=torch.long),
+                "attention_mask": tensor(attention_mask, dtype=torch.long),
+            }
+        except: 
+            pdb.set_trace()
 
 
 @dataclass

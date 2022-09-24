@@ -51,10 +51,10 @@ class ClampModelConfig(abc.ABC):
 
 class BartModelConfig(ClampModelConfig):
     def setup_model(self) -> Tuple[PreTrainedModel, ClampTokenizer, Seq2SeqSettings]:
-        if not self.model_loc.exists():
-            raise TrainedModelNotFoundError(
-                f"Model files not found in {self.model_loc}"
-            )
+        # if not self.model_loc.exists():
+        #     raise TrainedModelNotFoundError(
+        #         f"Model files not found in {self.model_loc}"
+        #     )
         model = BartForConditionalGeneration.from_pretrained(self.model_loc)
         tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))
         seq2seq_settings = Seq2SeqSettings(

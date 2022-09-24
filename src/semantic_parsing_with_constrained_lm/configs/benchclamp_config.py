@@ -8,6 +8,7 @@ import dataclasses
 import functools
 import json
 import sys
+import os 
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Sequence, Tuple, Union
 
@@ -55,14 +56,16 @@ from semantic_parsing_with_constrained_lm.train_model_setup import (
 from semantic_parsing_with_constrained_lm.finetune.lm_finetune import TrainExperiment
 
 # /mnt/my_input and /mnt/my_output refers to location names used in azure storage accounts.
-HUGGINGFACE_MODEL_DIR = (
-    Path("/mnt/my_input/huggingface_models/")
-    if RUN_ON_AML
-    else Path("huggingface_models/")
-)
-TRAINED_MODEL_DIR = (
-    Path("/mnt/my_output/trained_models/") if RUN_ON_AML else Path("trained_models/")
-)
+#HUGGINGFACE_MODEL_DIR = (
+#    Path("/mnt/my_input/huggingface_models/")
+#    if RUN_ON_AML
+#    else Path("huggingface_models/")
+#)
+HUGGINGFACE_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingface_models/") )
+#TRAINED_MODEL_DIR = (
+#    Path("/mnt/my_output/trained_models/") if RUN_ON_AML else Path("trained_models/")
+#)
+TRAINED_MODEL_DIR = Path(os.environ.get("CHECKPOINT_DIR", "trained_models") )
 LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("logs/")
 VERSION = "1.0"
 
