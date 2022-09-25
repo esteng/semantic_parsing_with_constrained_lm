@@ -170,21 +170,30 @@ class ReverseClampDataset(ClampDataset):
             return cached
 
         datum = self.data[idx]
-        input = (
-            datum.canonical 
-        )
+
+        # we need to split the natural utterance into context and response
+        # and only predict the response, conditioned on the context and the lispress 
+
+        natural = datum.natural 
+        split_natural = natural.split("|")
+        context = split_natural[0:-1]
+
+        input = context + [datum.canonical]
+        input = [x.strip() for x in input]
+        input = " | ".join(input)
         input_token_ids = (
             self.tokenizer.encode(input)
         )
-        output = (
-            datum.natural 
-        )
+
+        response = split_natural[-1]
+        output = f" | {response.strip()}"
 
         output_token_ids = (
             self.seq2seq_settings.output_surround.bos
             + self.tokenizer.encode(output)
             + self.seq2seq_settings.output_surround.eos
         )
+
         if self.is_encoder_decoder:
             result = {
                 "input_ids": input_token_ids,
