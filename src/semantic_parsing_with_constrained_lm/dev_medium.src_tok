@@ -1,0 +1,500 @@
+__User Do I have time for 3 hour brainstorming session on Thursday?
+__User Delete my next event
+__User Delete my next event __Agent Is this what you want me to cancel? __User No, keep it for now.
+__User No, keep it for now. __Agent Ok, I won't do anything for now. Let me know what else I can help you with. __User Please get rid of my board meeting.
+__User Please get rid of my board meeting. __Agent Is this what you want me to cancel? __User Let it stay.
+__User Are Jeff, Terry, and myself still getting lunch tomorrow at Steve's Tavern?
+__User Are Jeff, Terry, and myself still getting lunch tomorrow at Steve's Tavern? __Agent Yes, I found one event matching "lunch" with Jeff and Terry tomorrow Steve's Tavern. It's "lunch" tomorrow from 12:00 to 12:30 PM. __User Do I have anything scheduled on Monday?
+__User Do I have anything scheduled on Monday? __Agent Yes, I found one event on Monday the 9th. It's "Appointment" from 3:00 to 3:30 PM. __User Do I have anything with Terry after our Dec 4 lunch?
+__User Do I have anything with Terry after our Dec 4 lunch? __Agent No, I didn't find any events with Terry after tomorrow. __User Do I have a doctors appointment next week?
+__User Do I have a doctors appointment next week? __Agent Yes, I found one event matching "doctors appointment" next week. It's from 3:00 to 3:30 PM. __User Am I going rock climbing anytime this month?
+__User Do I have anything planned for next Friday?
+__User Do I have anything planned for next Friday? __Agent Yes, I found one event tomorrow. It's "lunch with Allen" from 6:30 to 7:45 PM. __User Great, thanks, but can you just make if for an hour instead?
+__User Great, thanks, but can you just make if for an hour instead? __Agent How is this? __User Yes, perfect, now can you tell me if I have anything scheduled for the next day, on Saturday?
+__User Yes, perfect, now can you tell me if I have anything scheduled for the next day, on Saturday? __Agent I've changed "lunch with Allen" to be for 1 hour. I didn't find any events on Saturday. __User Make an event with Jeane at Conference 5 at 5 pm tomorrow.
+__User Make an event with Jeane at Conference 5 at 5 pm tomorrow. __Agent How's this? __User Yep, that's good.
+__User create a timer please to morrow at 4
+__User create a timer please to morrow at 4 __Agent Sorry, I can't do reminders. __User Make an event for monday at 5
+__User Make an event for monday at 5 __Agent Is this good? __User Needs to know about any apointments tomorrow
+__User Needs to know about any apointments tomorrow __Agent I found 2 events tomorrow. __User Cancel Coffee Date Thursday
+__User I need you to schedule my meeting with Cecelia at 10 AM on April 15th
+__User I need you to schedule my meeting with Cecelia at 10 AM on April 15th __Agent Is this good? __User The meeting will end by 11 AM
+__User The meeting will end by 11 AM __Agent How's this? __User I need to meet with Cornelio and Karl sometime this week
+__User I need to meet with Cornelio and Karl sometime this week __Agent Does one of these work? __User Thursday works
+__User Thursday works __Agent I've put that on your calendar. __User remind me to call Barack by 5 pm today
+__User remind me to call Barack by 5 pm today __Agent Sorry, I can't do reminders. __User have my whole team meet me tonight
+__User What number is there to contact PC Gamerz in Hawaii?
+__User What number is there to contact PC Gamerz in Hawaii? __Agent It's (555) 555-5555. __User what is the number for the Wilbur May Museum in Reno?
+__User what is the number for the Wilbur May Museum in Reno? __Agent It's (555) 555-5555. __User Can you track down the phone number for Geralds Bar in Flint?
+__User no thanks
+__User Remove Kim from Monday's meeting and add Crim and Elli. __Agent I didn't find any events on December 2nd. __User Ok it must be on Tuesday then
+__User Ok it must be on Tuesday then __Agent How is this? __User Great, those are the correct attendees now.
+__User Great, those are the correct attendees now. __Agent I've changed "Zelda Yo" to be without Kim Possible, David Crim, and Elli Parker. __User great now please help me update something else
+__User great now please help me update something else __Agent Could you be more specific with your request? __User Can you delete the Zelda Yo event for me
+__User Can you delete the Zelda Yo event for me __Agent Is this what you want me to cancel? __User Yes please cancel that
+__User Can you add my nail appointment tomorrow at noon? It's for 45 minutes
+__User Can you add my nail appointment tomorrow at noon? It's for 45 minutes __Agent Is this good? __User Yea, that's correct
+__User I need to change the monthly meeting today from 2 pm to 3 pm and also include Richard, Kim and Connie on the attendee list for the new time. __Agent I didn't find any events named "monthly meeting" on your calendar today at 2:00 PM. __User make a appointment tomorrow
+__User make a appointment tomorrow __Agent Does one of these work? __User The one at 10am is a good one
+__User Schedule a meeting with Dan Bauman, Teresa Love, and Terry Bradshaw to determine the appropriate response we should give to Opathy Company.
+__User Schedule a meeting with Dan Bauman, Teresa Love, and Terry Bradshaw to determine the appropriate response we should give to Opathy Company. __Agent Here are some times when everyone is free. __User The second one will work for me.
+__User The second one will work for me. __Agent I've put "determine the appropriate response we should give to Opathy Company" from 10:00 to 10:30 AM. __User schedule a meeting with Mark and Carl Wednesday to discuss sales before 12 pm
+__User schedule a meeting with Mark and Carl Wednesday to discuss sales before 12 pm __Agent Here are some times when everyone is free. __User The second one works best for me.
+__User The second one works best for me. __Agent I've put "discuss sales" from 10:30 to 11:00 AM. __User I need a meeting on July 16th in the afternoon with Chuck and Leslie to discuss new interns
+__User When is my dinner at Applebee's?
+__User When is my dinner at Applebee's? __Agent The event matching "dinner" at Applebee's is on December 2nd at 8:00 PM. __User Oh my bad, I meant my dinner at Applebees with Kim. It should be next week.
+__User Oh my bad, I meant my dinner at Applebees with Kim. It should be next week. __Agent The event matching "dinner" with Kim next week at Applebees is on April 3rd at 5:00 PM. __User Ok cool thank you, and for this weekend when is my Book signing?
+__User Ok cool thank you, and for this weekend when is my Book signing? __Agent The event matching "Book signing" this weekend is on Saturday at 2:00 PM. __User No, search for the movie screening on Sunday
+__User No, search for the movie screening on Sunday __Agent The event matching "movie screening" on Sunday the 29th is at 4:00 PM. __User Can you look for the TV Show Screening next week?
+__User Can you look for the TV Show Screening next week? __Agent The "TV Show Screening" is on Tuesday the 31st from 7:00 to 7:30 PM. __User No sorry, I meant the TV show remake in April
+__User Put on my calendar a morning appointment with my eye doctor on Friday.
+__User Put on my calendar a morning appointment with my eye doctor on Friday. __Agent I can only look up names in your address book. __User then look for my doctor
+__User then look for my doctor __Agent I can only look up names in your address book. __User Eye doctor appointment for friday evening.
+__User Eye doctor appointment for friday evening. __Agent Does one of these work? __User I'll take the later one at 5:30 pm
+__User I'll take the later one at 5:30 pm __Agent I've put that on your calendar. __User Do I have anything going on tomorrow night?
+__User Delete concert event for this month.
+__User Can you find any upcoming events with Yamato? __Agent You have one event on your calendar. Your "read Harry Potter" is tomorrow from 12:00 to 12:30 PM. __User Hold on a moment while I figure out what else I need from you.
+__User Hold on a moment while I figure out what else I need from you. __Agent No problem. __User Ok, I think I'm done for now. Bye!
+__User next meet on tomorrow
+__User Make an event to finish BL3
+__User Make an event to finish BL3 __Agent Does one of these work? __User give me 2 more seconds please
+__User give me 2 more seconds please __Agent No problem. __User Can you make it an hour earlier?
+__User Can you make it an hour earlier? __Agent Is this good? __User hold on a minute
+__User hold on a minute __Agent No problem. __User Yeah, that sounds right
+__User Yeah, that sounds right __Agent I've put that on your calendar. __User schedule lunch for Joe and Mark tomorrow at 12
+__User schedule lunch for Joe and Mark tomorrow at 12 __Agent How's this? __User Can you make it last an hour instead?
+__User Can you make it last an hour instead? __Agent Is this what you're looking for? __User just a minute.
+__User what is the address of john
+__User what is the address of john __Agent I found 2 different people matching your query. Which of these did you mean? __User Add to the calendar a party planning meeting with Jan tomorrow evening.
+__User Add to the calendar a party planning meeting with Jan tomorrow evening. __Agent Here are some times when you and Jan are free. __User 5 pm is great
+__User 5 pm is great __Agent I've put that on your calendar. __User where is that at?
+__User where is that at? __Agent There is no location information for "party planning meeting". __User Leave it ...
+__User create work meeting on friday at 8
+__User create work meeting on friday at 8 __Agent Is this good? __User That looks good, thanks.
+__User That looks good, thanks. __Agent I've put that on your calendar. __User How warm will it be in Cleveland on Monday?
+__User How warm will it be in Cleveland on Monday? __Agent The maximum temperature will be 0.00 °F in Cleveland Monday the 26th. __User Will it be muggy?
+__User Will it be muggy? __Agent Sorry, I can't answer that with the information I have access to. __User How humid will it be?
+__User Have lunch with Josh be 11 am on Saturday morning.
+__User Have lunch with Josh be 11 am on Saturday morning. __Agent Is this good? __User Yes, this looks right.
+__User Yes, this looks right. __Agent I've put that on your calendar. __User Add a football game with mark Sunday at 12.
+__User Add a football game with mark Sunday at 12. __Agent Is this what you're looking for? __User Yes. Invite David Lax as well
+__User Yes. Invite David Lax as well __Agent Is this what you're looking for? __User Yes, it looks right. And also, search my event with Bob that was scheduled for next week.
+__User Delete my 11 am meeting on Wednesday.
+__User Remove all events from the rest of today.
+__User Remove all events from the rest of today. __Agent I can only do one action at a time. If you separate your requests, I can help you. __User YEAH OK
+__User YEAH OK __Agent Let me know if there's anything else I can help you with. __User Cancel my next appointment
+__User Cancel my next appointment __Agent Is this what you want me to cancel? __User yes cancel my dentist appointment?
+__User yes cancel my dentist appointment? __Agent I've deleted your next event. __User Can you schedule a meeting with a Travel agent for Wednesday at 12:30 pm?
+__User When is Korean new year?
+__User please make meet with john on Friday
+__User please make meet with john on Friday __Agent Here are some times when you and John Rink are free. __User Change the time to 2pm
+__User Change the time to 2pm __Agent Is this good? __User Looks great. Can you invite John, Rick and Jesse Smith.
+__User Looks great. Can you invite John, Rick and Jesse Smith. __Agent How's this? __User I want John Rink, Rick Rogers and Jesse Smith at the meeting.
+__User I want John Rink, Rick Rogers and Jesse Smith at the meeting. __Agent Is this what you're looking for? __User Add Fishing Expedition at 7 am on Sunday. It will be with Cole, Cody, and Miranda.
+__User Schedule a meeting with financial advisor on Friday at 4:00 PM.
+__User What day next week do I meet with Cindy?
+__User What day next week do I meet with Cindy? __Agent The event with Cindy next week is on June 4th at 2:00 PM. __User Change the Meeting with Cindy Carmichael to 10:00 am on Tuesday.
+__User Change the Meeting with Cindy Carmichael to 10:00 am on Tuesday. __Agent How is this? __User Yes, when am I meeting with her sister suzy Carmichael?
+__User Yes, when am I meeting with her sister suzy Carmichael? __Agent I've changed "Meeting with Cindy Carmichael and Megan Bowen" to be at 10:00. The event suzy Carmichael is tomorrow at 9:00. __User Do I have any events on August 1?
+__User Do I have any events on August 1? __Agent No, I didn't find any events on August 1st. __User What about the day before?
+__User BOOK 1 HOUR FOR LUNCH TODAY AFTERNOON
+__User BOOK 1 HOUR FOR LUNCH TODAY AFTERNOON __Agent Does one of these work? __User MAKE THE LUNCH DATE BETWEEN 1 AND 2 PM
+__User MAKE THE LUNCH DATE BETWEEN 1 AND 2 PM __Agent Does this look right? __User YES THANK YOU
+__User YES THANK YOU __Agent I've put that on your calendar. __User NO
+__User Do i have a peace and conflict meeting tonight
+__User Do i have a peace and conflict meeting tonight __Agent Yes, I found one event matching "peace and conflict meeting" tonight. It's from 9:00 to 9:30 PM. __User How about on Saturday?
+__User How about on Saturday? __Agent No, I didn't find any events matching "peace and conflict meeting" on Saturday. __User Then, could you move that over to Sunday please?
+__User Then, could you move that over to Sunday please? __Agent How is this? __User That looks great.
+__User That looks great. __Agent I've changed "peace and conflict meeting" to be. __User Do I have a weightlifting competition with Jeff tomorrow?
+__User make an event on Friday from 8 am to 9 am and mark me as out of office during that time
+__User make an event on Friday from 8 am to 9 am and mark me as out of office during that time __Agent I've put that on your calendar. Your status is set to Out of Office. __User now make another event from 4 pm to 5 pm on Friday and mark as Out of Office also.
+__User now make another event from 4 pm to 5 pm on Friday and mark as Out of Office also. __Agent I've put that on your calendar. Your status is set to Out of Office. __User now change that to start at 6 pm instead
+__User What time is my hair appointment next week?
+__User What time is my hair appointment next week? __Agent The event matching "hair appointment" next week is on Wednesday the 26th at 6:30 PM. __User Ok, and when is dinner with mom and dad?
+__User Ok, and when is dinner with mom and dad? __Agent I can only look up names in your address book. __User Ok. Great. Remind me to check with the restaurant about whether they have my parent's anniversary cake ready an hour before then.
+__User please set event on calendar to meet dave at pizza hut on 3/26/19 at 2pm
+__User please set event on calendar to meet dave at pizza hut on 3/26/19 at 2pm __Agent Is this good? __User yes
+__User yes __Agent I've put that on your calendar. __User do i have anything scheduled for 3/26/19
+__User do i have anything scheduled for 3/26/19 __Agent Yes, I found one event tomorrow. It's "Meeting with Dave Strider and Megan Bowen" from 2:00 to 2:30 PM. __User change date to 3/27/19
+__User change date to 3/27/19 __Agent No, I didn't find any events on Wednesday. __User move events from 3/26/19 to 3/27/19
+__User move events from 3/26/19 to 3/27/19 __Agent I can only do one action at a time. If you separate your requests, I can help you. __User delete events for 3/26/19
+__User Please schedule the meeting a few days from today
+__User Please schedule the meeting a few days from today __Agent Does one of these work? __User The first one. Do I have several meetings tomorrow?
+__User The first one. Do I have several meetings tomorrow? __Agent I've put that on your calendar. Yes, I found 3 events tomorrow. The first is "mentor meeting" from 9:00 to 9:30 AM. __User Push yoga back by a few minutes
+__User Push yoga back by a few minutes __Agent How is this? __User ok
+__User Hello there. Can you schedule a meeting for 10 AM tomorrow?
+__User Hello there. Can you schedule a meeting for 10 AM tomorrow? __Agent Is this good? __User It does. Thank you.
+__User It does. Thank you. __Agent I've put that on your calendar. __User Actually, can you move that to next friday?
+__User Actually, can you move that to next friday? __Agent How about now? __User No. The friday after next.
+__User No. The friday after next. __Agent Is this the update you want? __User Move the appointment to April 26
+__User Move the appointment to April 26 __Agent How is this? __User Yes. Thank you.
+__User Yes. Thank you. __Agent I've changed "Appointment" to be. __User That is all.
+__User Make a meeting with Jake and her boss tomorrow at 2 pm in Berlin
+__User Make a meeting with Jake and her boss tomorrow at 2 pm in Berlin __Agent Is this good? __User Actually, I can't meet with Jake or her boss anymore.
+__User Actually, I can't meet with Jake or her boss anymore. __Agent Ok, I won't do anything for now. Let me know what else I can help you with. __User Can you show me what's on my schedule for 2pm tomorrow?
+__User Can you show me what's on my schedule for 2pm tomorrow? __Agent I didn't find any events tomorrow at 2:00 PM. __User Okay, then schedule a meeting with Jake and his boss for 2 pm tomorrow.
+__User Okay, then schedule a meeting with Jake and his boss for 2 pm tomorrow. __Agent How's this? __User There is a small change. Jake's boss, Michael, is coming to this meeting.
+__User what is my Saturday calendar?
+__User what is my Saturday calendar? __Agent I didn't find any matching events on your calendar. __User Add soccer game at 1 on saturday
+__User Please remove any duplicate entries from my calendar.
+__User Please remove any duplicate entries from my calendar. __Agent I can only do one action at a time. If you separate your requests, I can help you. __User put the meeting with sam
+__User put the meeting with sam __Agent Does one of these work? __User cop what
+__User cop what __Agent Let me know if there's anything else I can help you with. __User Make a event for Saturday afternoon
+__User Make a event for Saturday afternoon __Agent Does one of these work? __User nahh
+__User Schedule a meeting right now and make the meeting last till 5 o'clock
+__User Schedule a meeting right now and make the meeting last till 5 o'clock __Agent Is this good? __User Add Darth Vader and Otter to that meeting
+__User Add Darth Vader and Otter to that meeting __Agent How's this? __User Yes, Confirm
+__User Yes, Confirm __Agent I've put that on your calendar. __User Is there anyone who hasn't replied about whether or not they're attending the meeting?
+__User What is the phone number for Intermedia in bellevue
+__User What is the phone number for Intermedia in bellevue __Agent It's (555) 555-5555. __User What is the number for Frenchette in New York?
+__User What is the number for Frenchette in New York? __Agent It's (555) 555-5555. __User What's the number for Lil Jon's Lounge in Bellevue?
+__User Create lunch with mom and dad tomorrow early afternoon.
+__User Create lunch with mom and dad tomorrow early afternoon. __Agent I can only look up names in your address book. __User yeah ok
+__User yeah ok __Agent Let me know if there's anything else I can help you with. __User lunch with margaret and bill early afternoon tomorrow
+__User lunch with margaret and bill early afternoon tomorrow __Agent Does one of these work? __User 12 pm works
+__User 12 pm works __Agent I've put that on your calendar. __User great thanks so much
+__User Mark this afternoon as busy.
+__User Can you add family reunion to my calendar for June 22nd at Fernbank park?
+__User Can you list all the lunches I have scheduled for next week?
+__User Can you list all the lunches I have scheduled for next week? __Agent I didn't find any events matching "lunches" next week. __User Do I have any meetings scheduled?
+__User Do I have any meetings scheduled? __Agent Looks like it. __User Thanks.
+__User Thanks. __Agent Let me know if there's anything else I can help you with. __User Now, who am I meeting on June 9?
+__User Now, who am I meeting on June 9? __Agent There are no attendees who have accepted "sync". __User Can you invite scot hanson to that?
+__User Can you invite scot hanson to that? __Agent How is this? __User Perfect
+__User Perfect __Agent I've changed "sync" to be Scot Hanson. __User When is my dentist appointment again?
+__User When is my dentist appointment again? __Agent The event matching "dentist appointment" is on Saturday at 7:00 AM. __User Can you move that to 9 AM please?
+__User Can you move that to 9 AM please? __Agent Is this the change you want to make? __User Yes it does.
+__User Yes it does. __Agent I've changed "dentist" to be at 9:00. __User I already called the dentist to reschedule that.
+__User I already called the dentist to reschedule that. __Agent Let me know if there's anything else I can help you with. __User Do I have any events with Obama?
+__User Do I have any events with Obama? __Agent Yes, I found one event with Obama. It's "lunch" on Wednesday from 9:00 to 11:00. __User Great. Invite Scot to that as well please.
+__User Great. Invite Scot to that as well please. __Agent Is this the update you want? __User Thanks
+__User Thanks __Agent I've changed "lunch" to be Scot Hanson. __User Thanks again. I'm all done.
+__User Do I have any appointments tomorrow?
+__User Do I have any appointments tomorrow? __Agent Yes, I found one event tomorrow. It's "Appointment" from 11:00 to 11:30 PM. __User Do I have any events Friday Nov 8?
+__User Do I have any events Friday Nov 8? __Agent No, I didn't find any events on Friday. __User ok!
+__User ok! __Agent Let me know if there's anything else I can help you with. __User Do I have any appointments next week?
+__User Do I have any appointments next week? __Agent Yes, I found one event next week. It's "Appointment" on November 12th from 11:00 to 11:30 PM. __User what about in three weeks?
+__User Can you put horse riding lessons on the schedule for Sunday from 9:30 am to 10:30 am. It's at Woodhaven Stable.
+__User Can you put horse riding lessons on the schedule for Sunday from 9:30 am to 10:30 am. It's at Woodhaven Stable. __Agent Is this good? __User yes it does
+__User yes it does __Agent I've put that on your calendar. __User add board meeting tomorrow morning at 8 am
+__User add board meeting tomorrow morning at 8 am __Agent How's this? __User good
+__User Is Trueblood's a very family friendly place to eat?
+__User Is Trueblood's a very family friendly place to eat? __Agent I'm unable to find Trueblood. __User Honest Mary's in Austin seems nice, but are they family friendly?
+__User Honest Mary's in Austin seems nice, but are they family friendly? __Agent Yes. __User is Rum Sugar Lime in Reno family friendly
+__User create pizza night tuesday at 12
+__User create pizza night tuesday at 12 __Agent Is this good? __User yes
+__User Hello, I need to book an event next month
+__User Hello, I need to book an event next month __Agent Does one of these work? __User Can you create an event for a wedding on May 2nd?\
+__User Can you create an event for a wedding on May 2nd?\ __Agent Does one of these work? __User It starts at 6PM and won't end until late
+__User It starts at 6PM and won't end until late __Agent Is this good? __User Create an event for a wedding 6PM-midnight on May 2nd
+__User Create an event for a wedding 6PM-midnight on May 2nd __Agent How's this? __User Yes
+__User Yes __Agent I've put that on your calendar. __User Do I have any appointments in December?
+__User Do I have any appointments in December? __Agent No, I didn't find any events in December. __User What events did I have last month?
+__User What events did I have last month? __Agent I didn't find any matching events on your calendar. __User Do I have any events next month?
+__User Do I have any events next month? __Agent Yes, I found one event next month. It's "wedding" on May 2nd from 6:00 to 12:00 AM. __User Do I have any events in May?
+__User I need an event made for last wednesday
+__User I need an event made for last wednesday __Agent Does one of these work? __User The first option.
+__User The first option. __Agent I've put that on your calendar. __User Put the birthday party I went to last Sunday onto my calendar
+__User Put the birthday party I went to last Sunday onto my calendar __Agent Does one of these work? __User The second option works.
+__User The second option works. __Agent I've put that on your calendar. __User I went to a birthday party last monday at 8 pm
+__User Frisbee golf meet sunday night
+__User Frisbee golf meet sunday night __Agent Does one of these work? __User First one please, second one will be dark
+__User First one please, second one will be dark __Agent I've put that on your calendar. __User That should be for an hour as well.
+__User That should be for an hour as well. __Agent How is this? __User yes it does
+__User yes it does __Agent I've changed "Frisbee golf meet" to be for 1 hour. __User thanks for your help
+__User Did I have dinner with Leo last Saturday?
+__User Did I have dinner with Leo last Saturday? __Agent Yes, I found one event matching "dinner" with Leo on Saturday the 13th. It was from 5:30 to 6:00 PM. __User When did I meet with Sarah last?
+__User When did I meet with Sarah last? __Agent The last event with Sarah before today at 10:55 PM was on Wednesday the 10th at 9:00 AM. __User Add Chris' Steakhouse as the location to the meeting with Sarah from last Wednesday.
+__User Add Chris' Steakhouse as the location to the meeting with Sarah from last Wednesday. __Agent How is this? __User Yes. Olenna also was invited.
+__User Yes. Olenna also was invited. __Agent Is this the change you want to make? __User Can you add Olenna to the event?
+__User hi, want to know price range of hotel rooms within town
+__User hi, want to know price range of hotel rooms within town __Agent Sorry, I can't handle that yet. __User Add look for hotels tonight
+__User Add look for hotels tonight __Agent Does one of these work? __User The second one is better.
+__User The second one is better. __Agent I've put that on your calendar. __User What do I have scheduled for tomorrow?
+__User What do I have scheduled for tomorrow? __Agent You have one event on your calendar. Your "Mineral Collecting Symposium" is tomorrow from 3:00 to 6:00 PM. __User Do I have anything after that tomorrow?
+__User Do I have anything after that tomorrow? __Agent No, I didn't find any events tomorrow after 6:00 PM. __User Great, go ahead and put dinner at Mike's down for 7 tomorrow night.
+__User Great, go ahead and put dinner at Mike's down for 7 tomorrow night. __Agent Is this good? __User Looks great!
+__User What time is the soccer match on Tuesday?
+__User What time is the soccer match on Tuesday? __Agent The event matching "soccer match" on Tuesday the 19th is at 3:00 PM. __User yeah,fine,thank you
+__User yeah,fine,thank you __Agent Let me know if there's anything else I can help you with. __User Please make a football game for the same time on Saturday
+__User Please make a football game for the same time on Saturday __Agent Is this good? __User Yes it does.
+__User Yes it does. __Agent I've put that on your calendar. __User ok`
+__User Schedule Festival on the Vernal Equinox.
+__User Schedule Festival on the Vernal Equinox. __Agent Sorry I can't help you with that yet. __User OK
+__User OK __Agent Let me know if there's anything else I can help you with. __User Put Festival on my calendar and the location is Vernal Equinox
+__User Put Festival on my calendar and the location is Vernal Equinox __Agent Does one of these work? __User Bottom one please
+__User Bottom one please __Agent I've put that on your calendar. __User Thanks. Can you add Maurice to the festival?
+__User Do I have any events on my calendar at the moment?
+__User Do I have any events on my calendar at the moment? __Agent No, I didn't find any events on your calendar. __User I have a lunch meeting with Paige Ashworth tomorrow at noon.
+__User I have a lunch meeting with Paige Ashworth tomorrow at noon. __Agent Is this good? __User Yes
+__User Yes __Agent I've put that on your calendar. __User I also have an conference meeting with Jeong-Ho Kim, Cher Roydon and Damon Ellery tomorrow at 4pm.
+__User I also have an conference meeting with Jeong-Ho Kim, Cher Roydon and Damon Ellery tomorrow at 4pm. __Agent How's this? __User good
+__User Oops, forgot, I should accept the Stars event
+__User Oops, forgot, I should accept the Stars event __Agent I will accept "Lars and In Stars". Is that ok? __User I also need to accept the invitation to the sales call with a message that says "It should be really quick"
+__User I also need to accept the invitation to the sales call with a message that says "It should be really quick" __Agent I will accept "Sales Call" and send a response to the organizer with the following comment: "It should be really quick". Is that ok? __User Okay, now please accept my invitation to the smash weekly and add a message that says "Prepare to get bopped boiis"
+__User Delete birthday tomorrow with Emily, Joseph, Lois and Stewie
+__User Delete birthday tomorrow with Emily, Joseph, Lois and Stewie __Agent Is this what you want me to cancel? __User Yes, please.
+__User Yes, please. __Agent I've deleted that. __User Put Go to John Mayer Concert with Emily, Lois, Joseph, and Stewie.
+__User Put Go to John Mayer Concert with Emily, Lois, Joseph, and Stewie. __Agent Here are some times when everyone is free. __User The second one. When am I meeting Beyonce with Adrianna, Yvette, April and Summer?
+__User The second one. When am I meeting Beyonce with Adrianna, Yvette, April and Summer? __Agent I've put that on your calendar. The event with Summer, Beyonce, Adrianna, Yvette, and April is on Sunday the 25th at 2:00 PM. __User Move that to 3
+__User Add Dec 29 last year an end year party
+__User Add Dec 29 last year an end year party __Agent Does one of these work? __User Yes, that works. Remove my vacation from last year's schedule.
+__User The meeting wont involve steve so remove him
+__User The meeting wont involve steve so remove him __Agent How is this? __User Yes it does.
+__User Yes it does. __Agent I've changed "Meeting with Steve, Marcus, and Damon Straeter" to be without Steve. __User Do i have any coffee dates without amanda?
+__User Do i have any coffee dates without amanda? __Agent No, I didn't find any events named "coffee dates" without Amanda. __User What about meetings without Amanda?
+__User What about meetings without Amanda? __Agent I found 1 on your calendar. It's "Meeting with Steve, Marcus, and Damon Straeter" on Saturday from 6:00 to 6:30 PM. __User Where will that meeting be?
+__User Schedule interview with Jim at 3pm on Thursday. __Agent Is this good? __User Thanks. It much appreaciated.
+__User Reschedule all meetings during Thanksgiving week for either the week before or after.
+__User Reschedule all meetings during Thanksgiving week for either the week before or after. __Agent I can only do one action at a time. If you separate your requests, I can help you. __User schedule an event dinner with jackson this week
+__User schedule an event dinner with jackson this week __Agent Here are some times when you and Jackson are free. __User select the second one
+__User select the second one __Agent I've put that on your calendar. __User Outstanding, thank you!
+__User Outstanding, thank you! __Agent Let me know if there's anything else I can help you with. __User Make the dinner last an hour.
+__User Make the dinner last an hour. __Agent Here are some times when you and Jackson are free. __User choose the second one
+__User Can you tell me what day the vet appointment is next week?
+__User Can you tell me what day the vet appointment is next week? __Agent It starts on March 6th at 2:00 PM. __User Change the end time to 3:00 PM.
+__User Make me an event around 8 pm today
+__User Make me an event around 8 pm today __Agent Does one of these work? __User yes, schedule the first one. Please find my event that starts around 4
+__User yes, schedule the first one. Please find my event that starts around 4 __Agent I've put that on your calendar. The "green thumb" is from 4:30 PM to 5:00 PM. __User I need to add Pick Flowers around 5 pm today
+__User I need to add Pick Flowers around 5 pm today __Agent Does one of these work? __User ok
+__User What is my 2nd event tomorrow?
+__User What is my 2nd event tomorrow? __Agent The 2nd tomorrow is "Appointment" from 4:00 to 4:30 PM. __User what is my 2nd event today?
+__User what is my 2nd event today? __Agent The 2nd event is "Appointment" today from 5:00 to 5:30 PM. __User Where is my 2nd event today?
+__User ys
+__User ys __Agent I can help you with your calendar. __User yes
+__User yes __Agent Let me know if there's anything else I can help you with. __User yes
+__User yes __Agent Let me know if there's anything else I can help you with. __User yes
+__User Read my schedule for the week
+__User Read my schedule for the week __Agent I found 2 events this week. __User The 2nd event looks great
+__User The 2nd event looks great __Agent Let me know if there's anything else I can help you with. __User Create Buy New Computer Mouse for Thursday at 10 am.
+__User Create Buy New Computer Mouse for Thursday at 10 am. __Agent Is this good? __User It's look right
+__User It's look right __Agent I've put that on your calendar. __User Sheee
+__User Sheee __Agent Let me know if there's anything else I can help you with. __User cancel my hair appointment on Friday morning
+__User I need the reports of David Lax
+__User I need the reports of David Lax __Agent David Lax's direct reports are Kim Possible and Damon Straeter __User I need a meeting with them tomorrow.
+__User I need a meeting with them tomorrow. __Agent I can only look up names in your address book. Please use a full name and try again. __User Kim Possible
+__User Kim Possible __Agent Here is the contact information for Kim Possible: __User I need to know who Dan Schoffel's reports are.
+__User I need to know who Dan Schoffel's reports are. __Agent Dan Schoffel's direct reports are David Crim and David Lax __User They all are reporters.
+__User Hello
+__User Hello __Agent I can help you with your calendar. __User What is the weather today
+__User What is the weather today __Agent It is clear with a high of 0.00 °F and a low of 0.00 °F today. __User What will be the weather tomorrow
+__User What will be the weather tomorrow __Agent It will be clear with a high of 0.00 °F and a low of 0.00 °F on Sun, October 28. __User How much rain will we get today?
+__User How much rain will we get today? __Agent It's 0.00 m. __User Will I need sunscreen today?
+__User Will I need sunscreen today? __Agent Yes. __User Will I need a jacket today?
+__User Will I need a jacket today? __Agent Yes. It was clear with a high of 0.00 °F and a low of 0.00 °F on Sat, October 27. __User When is sunset/
+__User Does the Happy Dumpling Chinese Restaurant in Seattle do takeout?
+__User Does the Happy Dumpling Chinese Restaurant in Seattle do takeout? __Agent I found 7 different places matching that description. Can you be more specific? __User Does the Napa in Reno have takeout?
+__User Does the Napa in Reno have takeout? __Agent I found 6 different places matching that description. Can you be more specific? __User Does Moody's in Truckee have takeout?
+__User Did I decline the quarterly review?
+__User Did I decline the quarterly review? __Agent No, you have accepted the "Quarterly Review" invitation. __User What did I say to Abby's invite to our quarterly review?
+__User What did I say to Abby's invite to our quarterly review? __Agent You have accepted the "Quarterly Review" invitation. __User DId I decline the meeting on wednesday?
+__User schedule a private yoga session with Jamie at 5:30 pm today.
+__User schedule a private yoga session with Jamie at 5:30 pm today. __Agent Is this good? __User Yes but have it end at 6:30 pm.
+__User Yes but have it end at 6:30 pm. __Agent Here are some times when you and Jamie are free. __User i prefer the first option
+__User i prefer the first option __Agent I've put that on your calendar. __User good
+__User good __Agent Let me know if there's anything else I can help you with. __User Schedule a briefing with Eric tomorrow at noon.
+__User Add golf on Saturday at 9:00 AM.
+__User Add golf on Saturday at 9:00 AM. __Agent Is this good? __User Yes, but uninvite Katie from that.
+__User Good, but I also don't want Rachel there. Uninvite Rachel. __Agent I found 9 different people matching your query. Which of these did you mean? __User Remove rachel from the list of attendees for the most recent event.
+__User Remove rachel from the list of attendees for the most recent event. __Agent Is this the update you want? __User GOOD
+__User I need to change my daily standup meeting time
+__User How is the weather going to be in Austin tomorrow?
+__User How is the weather going to be in Austin tomorrow? __Agent It will be clear with a high of 0.00 °F and a low of 0.00 °F tomorrow. __User Ok, that's good. Add a bike ride for 1 pm tomorrow to 3 pm.
+__User Add lunch with mom after my meeting with Janice __Agent I can only look up names in your address book. __User ok
+__User Cancel the little league game on Wednesday.
+__User Cancel the little league game on Wednesday. __Agent Is this what you want me to cancel? __User Sorry I meant the one on Thursday.
+__User Sorry I meant the one on Thursday. __Agent Is this what you want me to cancel? __User Yes that's it.
+__User I can't go to the thanksgiving parade tomorrow. __Agent I will decline "thanksgiving parade". Is that ok? __User Yes let us cancel that
+__User I need milkshakes. It's located at The Yard. Can you find time next weekend
+__User I need milkshakes. It's located at The Yard. Can you find time next weekend __Agent Does one of these work? __User Number 2
+__User When is my next sighting with Velo, Serj, and Gragio?
+__User When is my next sighting with Velo, Serj, and Gragio? __Agent The next event matching "sighting" with Velo, Serj, and Gragio is on Thursday the 22nd at 2:00 PM. __User Invite Jess C, Candice and Jackson to strategy meeting tomorrow.
+__User Invite Jess C, Candice and Jackson to strategy meeting tomorrow. __Agent How is this? __User Yes it does.
+__User Yes it does. __Agent I've changed "op strategy meeting" to be Jess C, Candice, and Jackson. __User That looks correct to me.
+__User That looks correct to me. __Agent Let me know if there's anything else I can help you with. __User Make an event for Monday at 4pm
+__User Am I scheduled to go shopping tomorrow morning?
+__User Am I scheduled to go shopping tomorrow morning? __Agent It doesn't look like it. __User Will I be meeting with June sometime within the next month?
+__User Change my swim meet to be all day on Friday, instead of 2 hours long.
+__User Change my swim meet to be all day on Friday, instead of 2 hours long. __Agent How is this? __User Yes, that looks good thank yu
+__User Yes, that looks good thank yu __Agent I've changed "swim meet" to be all day today. __User change the swimming Tournament to be all day instead of 9 hours.
+__User change the swimming Tournament to be all day instead of 9 hours. __Agent Is this the change you want to make? __User Please repeat that tournament on my calendar next year.
+__User Please repeat that tournament on my calendar next year. __Agent Sorry, I can't handle that yet. __User Add another Swim Meet for all day this Sunday
+__User Cancel my one-on-one with my manager
+__User Cancel my one-on-one with my manager __Agent Is this what you want me to cancel? __User Yes do that please
+__User Yes do that please __Agent I've deleted your event David Lax. __User DONE
+__User DONE __Agent Let me know if there's anything else I can help you with. __User Can you please find the date for my upcoming meeting with Jana's supervisor?
+__User Can you please find the date for my upcoming meeting with Jana's supervisor? __Agent The event with Dan Schoffel is at 2:00 PM. __User Perfect. Does Damon report to Dan Schoffel?
+__User Can you schedule dinner with Jeong-Ho Kim?
+__User Can you schedule dinner with Jeong-Ho Kim? __Agent Does one of these work? __User No
+__User No __Agent Ok, I won't do anything for now. Let me know what else I can help you with. __User Can you schedule it in the evening?
+__User Change my meeting time with Kate from 5 PM today to 6 PM tomorrow.
+__User Change my meeting time with Kate from 5 PM today to 6 PM tomorrow. __Agent Does this look right? __User looks perfect
+__User looks perfect __Agent I've changed "Fight off the underworld" to be at 6:00. __User good job thank you
+__User good job thank you __Agent Let me know if there's anything else I can help you with. __User no thanks you did good job
+__User I want to schedule a one-one with Eric next Tuesday.
+__User I want to schedule a one-one with Eric next Tuesday. __Agent Here are some times when you and Eric are free. __User The 1:pm works.
+__User The 1:pm works. __Agent I've put that on your calendar. __User great looking good
+__User great looking good __Agent Let me know if there's anything else I can help you with. __User Make an appointment for the spa at 4.
+__User Make an appointment for the spa at 4. __Agent Is this good? __User looks awesome
+__User please mark that i have a meeting tomorrow at 11:59pm
+__User please mark that i have a meeting tomorrow at 11:59pm __Agent Is this good? __User Looks best
+__User Looks best __Agent I've put that on your calendar. __User Cancel the meeting I have the day after that.
+__User Cancel the meeting I have the day after that. __Agent Is this what you want me to cancel? __User No it should be a meeting on the 11th
+__User No it should be a meeting on the 11th __Agent Is this what you want me to cancel? __User Yes please cancel.
+__User Please schedule the meeting today?
+__User Please schedule the meeting today? __Agent Does one of these work? __User yes , first one
+__User yes , first one __Agent I've put that on your calendar. __User Do I have more than a couple of meetings today?
+__User Do I have more than a couple of meetings today? __Agent Yes, I found 3 events from now until the end of the day. The first is "Snowshoeing" from 4:00 to 4:30 PM. __User ok
+__User ok __Agent Let me know if there's anything else I can help you with. __User set animal planet plan
+__User Give me weather in Amherst, NY.
+__User Give me weather in Amherst, NY. __Agent It is clear with a temperature of 0.00 °F right now. __User When will it snow in Amherst, NY?
+__User When will it snow in Amherst, NY? __Agent Sorry, I can't answer that with the information I have access to. __User When will it rain again in Amherst, NY?
+__User When will it rain again in Amherst, NY? __Agent Sorry, I can't answer that with the information I have access to. __User What is the 10 day forecast for Amherst, NY?
+__User What is the 10 day forecast for Amherst, NY? __Agent It will be clear with a high of 0.00 °F and a low of 0.00 °F in Amherst between Fri, October 26 and Mon, November 5. __User What day will be 59 degrees in Amherst, NY?
+__User What day will be 59 degrees in Amherst, NY? __Agent Sorry, I can't answer that with the information I have access to. __User What is sleet?
+__User What is sleet? __Agent Sorry, I can't answer that with the information I have access to. __User Give me the definition of sleet.
+__User Give me the definition of sleet. __Agent Sorry, I can't answer that with the information I have access to. __User What is 100 degrees Fahrenheit translated to Celsius?
+__User What is 100 degrees Fahrenheit translated to Celsius? __Agent It's 0.00 °C. __User Good bye
+__User When is my tennis lesson?
+__User When is my tennis lesson? __Agent The event matching "tennis lesson" is on Tuesday the 22nd at 10:00 PM. __User Great, put coffee with James immediately after.
+__User Great, put coffee with James immediately after. __Agent Is this good? __User Good. Now add Dinner for 7pm that night.
+__User Good. Now add Dinner for 7pm that night. __Agent I've put that on your calendar. __BREAK How's this? __User Yes this looks much better
+__User I need to create an event for tomorrow at 10 pm that says date with lucy
+__User I need to create an event for tomorrow at 10 pm that says date with lucy __Agent Is this good? __User Yea it does.
+__User Yea it does. __Agent I've put that on your calendar. __User No that doesn't work i need my date later than 10:30pm
+__User No that doesn't work i need my date later than 10:30pm __Agent Here are some times when you and Lucy are free. __User I need to do it a little later in the day.
+__User I need to do it a little later in the day. __Agent Is this the change you want to make? __User That works. Thanks.
+__User Delete the children rights Meeting at the UN on friday
+__User Delete the children rights Meeting at the UN on friday __Agent Is this what you want me to cancel? __User No I need you to delete the one at the White House
+__User No I need you to delete the one at the White House __Agent Is this what you want me to cancel? __User yes cancel this
+__User yes cancel this __Agent I've deleted that. __User Can you also delete the fundraiser event scheduled for next Thursday?
+__User Can you also delete the fundraiser event scheduled for next Thursday? __Agent Is this what you want me to cancel? __User I'm afraid so, yes.
+__User yes __Agent I've put that on your calendar. __User Can you schedule an event hiking at the park that's close to there on the first of February.
+__User When is my next meeting with Fred? __Agent I didn't find any events with Fred Eurus. __User Add a meeting with Fred at 9am tomorrow
+__User Is Elli free this weekend noon? __Agent Here are some times when Elli Parker is free this weekend. __User yes
+__User Wonderful, thank you! Is Jake free next Monday? __Agent I haven’t been trained to describe the result of your request. Can you try something different? Here are some times when Jake Cobb is free on Monday the 16th. __User yes
+__User That is good. Also, is Abby free in April __Agent I haven’t been trained to describe the result of your request. Can you try something different? Here are some times when Abby Gonano is free in April. __User add that
+__User Urgent message for Jaina, need her email.
+__User Urgent message for Jaina, need her email. __Agent The email address of Jaina Proudmoore is fortheramore@email.com. __User Proudmoore's number, please
+__User Proudmoore's number, please __Agent The phone number for Jaina Proudmoore is 848 515 232 515. __User Her location?
+__User Can you find my Dinner this week?
+__User Can you find my Dinner this week? __Agent The "Dinner" is on Friday from 6:00 to 6:30 PM. __User oh I meant find lunch next Wednesday
+__User oh I meant find lunch next Wednesday __Agent The "lunch" is on April 1st from 1:00 to 1:30 PM. __User Show me my product launch next week
+__User Show me my product launch next week __Agent The "product launch" is on April 3rd from 9:00 to 9:30 AM. __User I actually wanted the cider tasting in May
+__User I actually wanted the cider tasting in May __Agent The "cider tasting" is on May 3rd from 3:00 to 3:30 PM. __User What about the one that I'm going to with Kim the day after that?
+__User Hello, please add mr. Scot Hanson's birth day on april 20
+__User Hello, please add mr. Scot Hanson's birth day on april 20 __Agent Does one of these work? __User yeah perfect
+__User yeah perfect __Agent I've put that on your calendar on Saturday the 20th from 1:00 to 1:30 PM. __User meeting with Barack obama on april 15
+__User meeting with Barack obama on april 15 __Agent Does one of these work? __User yeah thank you
+__User yeah thank you __Agent I've put that on your calendar on Monday the 15th from 1:00 to 1:30 PM. __User yeah perfect
+__User yeah perfect __Agent Let me know if there's anything else I can help you with. __User Nothing, thanks.
+__User Please set up a dentist appointment for Tuesday afternoon
+__User Please set up a dentist appointment for Tuesday afternoon __Agent Does one of these work? __User No, just cancel it
+__User No, just cancel it __Agent Ok, I won't do anything for now. Let me know what else I can help you with. __User Please schedule a Guitar Practice tomorrow at 2:15pm.
+__User Please schedule a Guitar Practice tomorrow at 2:15pm. __Agent Is this good? __User That does look good
+__User That does look good __Agent I've put that on your calendar. __User No, that just won't do. Get rid of it.
+__User Put down a 2 PM event on my calendar.
+__User Put down a 2 PM event on my calendar. __Agent I've put that on your calendar. Your status is set to Busy. __User Repeat that.
+__User Repeat that. __Agent I've put that on your calendar. Your status is set to Busy. __User I want to spend 1 hour and 30 minutes on it. Please go ahead and make that change.
+__User I want to spend 1 hour and 30 minutes on it. Please go ahead and make that change. __Agent How is this? __User Go ahead and change the subject to "flute lesson with Andy Loamsson".
+__User Go ahead and change the subject to "flute lesson with Andy Loamsson". __Agent Is this the change you want to make? __User Can you tell me how long it will be?
+__User Schedule a week long vacation starting today
+__User Schedule a week long vacation starting today __Agent Is this good? __User yes, looks better
+__User yes, looks better __Agent I've put that on your calendar. __User Perfect Create it.
+__User Perfect Create it. __Agent Let me know if there's anything else I can help you with. __User I'll be on vacation in Las Vegas for four days starting on Thursday.
+__User I'll be on vacation in Las Vegas for four days starting on Thursday. __Agent Is this what you're looking for? __User That is what I'm looking for.
+__User create a date with Ruth today
+__User create a date with Ruth today __Agent Does one of these work? __User defer the next meeting with willian
+__User defer the next meeting with willian __Agent Sorry, I can't handle that yet. __User ok make a meeting with willian
+__User ok make a meeting with willian __Agent Does one of these work? __User No please
+__User No please __Agent Ok, I won't do anything for now. Let me know what else I can help you with. __User Cancel the Friday meeting
+__User Who has perhaps Accepted to the birthday party event?
+__User Who has perhaps Accepted to the birthday party event? __Agent Here is the list of attendees who have tentatively accepted "Birthday Party": Abby Gonano. __User Has anyone maybe accepted the Stand Up show?
+__User Has anyone maybe accepted the Stand Up show? __Agent Here is the list of attendees who have tentatively accepted "Stand Up Show": David Lax. __User Has anyone perhaps accepted the Podcast Recording
+__User make a party with waugh the day after tomorrow 7.00 to 7.30 apm
+__User make a party with waugh the day after tomorrow 7.00 to 7.30 apm __Agent Is this good? __User Cancel that actually, I no longer want to schedule that.
+__User Cancel that actually, I no longer want to schedule that. __Agent Ok, I won't do anything for now. Let me know what else I can help you with. __User Is it going to rain in Nashville today?
+__User Is it going to rain in Nashville today? __Agent Yes. The chance of rain is 0.00% today. __User What will the weather be like during the party?
+__User What will the weather be like during the party? __Agent I didn't find any events named "party" on your calendar. __User Can you change my party to be in dallas?
+__User I'm going to Whimbley Stadium on the 5th.
+__User I'm going to Whimbley Stadium on the 5th. __Agent Does one of these work? __User ok good
+__User ok good __Agent I've put that on your calendar on August 5th from 1:00 to 1:30 PM. __User When does Jessica have a game at Central State Ballpark?
+__User When does Jessica have a game at Central State Ballpark? __Agent Sorry, I can't handle that yet. __User What the time does Jessica have a game at Central State Ballpark?
+__User What the time does Jessica have a game at Central State Ballpark? __Agent The event matching "game at Central State Ballpark" with Jessica is tomorrow at 4:00 PM. __User Great! Make sure Rob is invited to the Game at Central State Ballpark.
+__User Are there any events next week scheduled with Ellen Degeneres?
+__User Are there any events next week scheduled with Ellen Degeneres? __Agent Yes, I found 1 event with Ellen Degeneres next week. It's "Meeting with Ellen Degeneres and Damon Straeter" on Tuesday the 10th from 9:00 to 9:30 AM. __User the event needs to be 8 hours
+__User the event needs to be 8 hours __Agent Does this look right? __User Actually I need it to end at 4, so let's make it 7 hours.
+__User Actually I need it to end at 4, so let's make it 7 hours. __Agent Does this look right? __User Do I have anything else planned with Ellen?
+__User Do I have anything else planned with Ellen? __Agent No, I didn't find any other events with Ellen Degeneres. __User How long is my next event supposed to last?
+__User OK THANK YOU
+__User OK THANK YOU __Agent I can help you with your calendar. __User Let's check the weather for tonight.
+__User Let's check the weather for tonight. __Agent Sorry, I can't handle that yet. __User Set check for tomorrow's weather at 5PM today
+__User Set check for tomorrow's weather at 5PM today __Agent Sorry, I can't handle that yet. __User Can you set an alarm for 5PM?
+__User Can you set an alarm for 5PM? __Agent Sorry, I can't do reminders. __User Set "check weather" for 6pm tonight
+__User Set up a meeting before brunch time next Saturday
+__User Set up a meeting before brunch time next Saturday __Agent Does one of these work? __User yes
+__User yes __Agent I've put that on your calendar on Saturday the 25th from 4:30 AM to 5:00 AM. __User Do I have a meeting that ends at brunch?
+__User Do I have a meeting that ends at brunch? __Agent No, I didn't find any events after tomorrow at 10:00. __User Well then lets create a meeting at brunch tomorrow
+__User Hello what can you tell me about the weather in my area for today?
+__User Hello what can you tell me about the weather in my area for today? __Agent It is clear with a temperature of 0.00 °F. __User will there be any chance of rain this week?
+__User will there be any chance of rain this week? __Agent Yes. __User Will it be cold any this week?
+__User Will it be cold any this week? __Agent Yes. __User will it be cold in the morning?
+__User will it be cold in the morning? __Agent Yes. __User when can we expect snow this year?
+__User Can you schedule a suit fitting with my team after my afternoon sales call on Thursday?
+__User Can you schedule a suit fitting with my team after my afternoon sales call on Thursday? __Agent Is this good? __User Yes add it please.
+__User Yes add it please. __Agent I've put that on your calendar. __User Add John Smith to that meeting as well.
+__User Add John Smith to that meeting as well. __Agent Is this the change you want to make? __User yes, that works
+__User yes, that works __Agent I've changed "Meeting with Jesse Rosenfeld, Dan Marton, Damon Straeter, and Abby Gonano" to be John Smith. __User Right after that, I need a follow up with my team
+__User When am I going to the football game with Mark, Steven, Jason, and Bob?
+__User When am I going to the football game with Mark, Steven, Jason, and Bob? __Agent The event matching "football game" with Mark, Steven, Jason, and Bob is on December 3rd at 5:00 PM. __User Great, but it will last at least 4 hours.
+__User Great, but it will last at least 4 hours. __Agent How is this? __User Have it start 2 hours later.
+__User Have it start 2 hours later. __Agent How about now? __User That works.
+__User That works. __Agent I've changed "football game" to be at 7:00 for 4 hours. __User When am I going snowshoeing with Michelle, Missy, Colin, and Richard?
+__User I need to set up a doctor appointment on friday for 2 hours
+__User I need to set up a doctor appointment on friday for 2 hours __Agent Does one of these work? __User The first one please.
+__User Get a room in Cambridge
+__User Get a room in Cambridge __Agent Does one of these work? __User yes the second one please
+__User yes the second one please __Agent I've put that on your calendar. __User Okay
+__User Okay __Agent Let me know if there's anything else I can help you with. __User I need a room for a lunch meeting next tuesday.
+__User I need a room for a lunch meeting next tuesday. __Agent Does one of these work? __User The second one.
+__User Can you give me information on my next meeting?
+__User Can you give me information on my next meeting? __Agent The "Meeting with Samantha and Damon Straeter" on November 20th from 11:00 to 11:30 PM. __User postpone it to a day later
+__User postpone it to a day later __Agent How is this? __User This looks fine.
+__User This looks fine. __Agent I've changed "Meeting with Samantha and Damon Straeter" to be. __User Great, is Samantha on the list?
+__User Great, is Samantha on the list? __Agent Yes, Samantha is invited to the "Meeting with Samantha and Damon Straeter". __User How long is the wedding reception this weekend?
+__User I need to create a meeting on Friday at 4 pm called week's review.
+__User I need to create a meeting on Friday at 4 pm called week's review. __Agent Is this good? __User Can you please make it till 5:00 p.m.
+__User Do I have any client meetings scheduled in the first week of March?
+__User Delete everything today later than 6pm
+__User Delete everything today later than 6pm __Agent I can only do one action at a time. If you separate your requests, I can help you. __User What meetings do I have after 6 today?
+__User What meetings do I have after 6 today? __Agent I found 1 event today after 6:00 PM. It's an "Appointment" from 8:00 to 8:30 PM. __User make that start later
+__User make that start later __Agent Does one of these work? __User The second option works the best for me unless there are later times
+__User The second option works the best for me unless there are later times __Agent I've changed "Appointment" to be Friday the 6th at 10:00 PM. __User Great, that works!
+__User Set up a tour of Yosemite National Park on Wednesday at 12pm.
+__User Set up a tour of Yosemite National Park on Wednesday at 12pm. __Agent Is this good? __User ok
+__User ok __Agent I've put that on your calendar. __User How will the weather be on Wednesday while I am there?
+__User How will the weather be on Wednesday while I am there? __Agent It will be clear with a temperature of about 0.00 °F for "tour" in 9035 Village Dr, Yosemite National Park, CA 95389 tomorrow from 12:00 to 12:30 PM. __User Will it be sunny at noon when i am there
+__User Will it be sunny at noon when i am there __Agent Yes. The average cloud cover will be 0.00% on May 5th at 12:00 PM. __User Will i need to bring a jacket
+__User Is jimmy invited to our walk in the park tomorrow?
+__User Is jimmy invited to our walk in the park tomorrow? __Agent No, jimmy is not invited to the "Walk in the park". __User again send the invite.
+__User again send the invite. __Agent I found 12 different people matching your query. Which of these did you mean? __User yes
+__User yes __Agent Let me know if there's anything else I can help you with. __User Thanks.
+__User Thanks. __Agent Let me know if there's anything else I can help you with. __User Is Jimmy invited to the dinner on friday?
+__User hi, can you help me set a meeting on Monday
+__User hi, can you help me set a meeting on Monday __Agent Does one of these work? __User Am I free later? I'd like it to be at 2pm
+__User Am I free later? I'd like it to be at 2pm __Agent I can only do one action at a time. If you separate your requests, I can help you. __BREAK Is this good? __User No, I have decided it should be at 3pm
+__User No, I have decided it should be at 3pm __Agent How's this? __User i want make an appointment with dave
+__User i want make an appointment with dave __Agent Here are some times when you and Dave James are free. __User Okay. Make it last for 2 hours
+__User Where was my lunch with amy again?
+__User Where was my lunch with amy again? __Agent The event matching "lunch" with amy is located at 5 Point Diner & Drive. __User Does it have outside tables?
+__User Does it have outside tables? __Agent I'm unable to find whether Scarborough has outdoor dining. You'll have to contact them. __User Thanks. Does it offer takeout?
+__User Thanks. Does it offer takeout? __Agent I'm unable to find whether Scarborough has takeout. You'll have to contact them. __User Can you tell me if they have a wine list?
+__User Can you tell me if they have a wine list? __Agent Sorry, I can't handle that yet. __User Where do I go for Breakfast?
+__User Cancel doctor's appointment today.
+__User Cancel doctor's appointment today. __Agent Is this what you want me to cancel? __User yes
+__User yes __Agent I've deleted your event matching "doctor's appointment" on Monday the 11th. __User How many meetings do I have left today?
+__User Do I have any appointments this weekend?
+__User Do I have any appointments this weekend? __Agent Yes, I found 4 events this weekend. The first is "Hike" on Saturday from 7:00 to 1:00 PM. __User Please change the first one to 6 am.
+__User Please change the first one to 6 am. __Agent How is this? __User Yes, perfect
+__User Yes, perfect __Agent I've changed "Hike" to be at 6:00. __User make a appointment for tomorrow
+__User make a appointment for tomorrow __Agent Does one of these work? __User The second one works well.

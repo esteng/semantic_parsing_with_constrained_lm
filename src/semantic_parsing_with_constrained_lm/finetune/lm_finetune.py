@@ -94,7 +94,7 @@ class TrainExperiment:
     reversed: bool = False
 
     def make_clamp_dataset(self, data: Sequence[FullDatum]) -> "ClampDataset":
-        if reversed:
+        if self.reversed:
             return ReverseClampDataset(
                 data=data,
                 tokenizer=self.tokenizer,
@@ -132,6 +132,7 @@ class ClampDataset(Dataset):
             if self.seq2seq_settings.input_surround.starts_with_space
             else datum.natural
         )
+
         input_token_ids = (
             self.seq2seq_settings.input_surround.bos
             + self.tokenizer.encode(natural)
