@@ -7,4 +7,4 @@
 
 python -m semantic_parsing_with_constrained_lm.run_exp \
     --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_config \
-    --exp-name-pattern 't5-base-lm-adapt_calflow_last_agent_all_.*'
+    --exp-name-pattern 't5-base-lm-adapt_calflow_last_user_all_.*'
