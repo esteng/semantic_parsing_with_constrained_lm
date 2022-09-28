@@ -135,9 +135,7 @@ def main():
 
         for i, inp in enumerate(input):
             to_cat = []
-            # if prefix_last_user[i] != '' and data_args.use_last_user:
             to_cat.append(prefix_last_user[i])
-            # if prefix_last_agent[i] != '' and data_args.use_last_agent:
             to_cat.append(prefix_last_agent[i])
             to_cat.append(inp)
             input[i] = ' | '.join(to_cat)
@@ -168,15 +166,25 @@ def main():
         compute_metrics=None,
     )
 
-    predict_results = trainer.predict(
-        dev_dataset, metric_key_prefix="predict", max_length=100, num_beams=5
-    )
+    def postprocess_and_clean(pred):
+        pred = pred.strip()
+        pred = re.sub("<extra_id_99>", "^", pred)
+        pred = re.sub("<extra_id_95>", "~", pred) 
+        pred = re.sub("<pad>", "", pred)
+        pred = re.sub("<s>", "", pred)
+        pred = re.sub("</s>", "", pred)
+        return pred 
+
     if training_args.predict_with_generate:
+        predict_results = trainer.predict(
+            dev_dataset, metric_key_prefix="predict", max_length=200, num_beams=5
+        )
         predictions = tokenizer.batch_decode(
                 predict_results.predictions, skip_special_tokens=False, clean_up_tokenization_spaces=True
             )
-        predictions = [pred.strip() for pred in predictions]
-        predictions = [re.sub("<.*?>", "", pred) for pred in predictions]
+        # predictions = [pred.strip() for pred in predictions]
+        # predictions = [re.sub("<.*?>", "", pred) for pred in predictions]
+        predictions = map(postprocess_and_clean, predictions)
         output_prediction_file = os.path.join(training_args.output_dir, f"{split}.tgt")
         #print(predictions)
 
@@ -189,27 +197,41 @@ def main():
         print(f"WRiting to {training_args.output_dir}")
         output_logit_file = os.path.join(training_args.output_dir, f"{split}.logits")
         with open(output_logit_file, "w") as f1:
-            for step, inputs in tqdm(enumerate(eval_dataloader)):
+            for step, inputs in tqdm(enumerate(eval_dataloader), total=len(eval_dataloader)):
                 inputs = {k: v.to(trainer.args.device) for k, v in inputs.items()}
-                outputs = trainer.model(**inputs)
-                logits = outputs.logits
-                logits = torch.exp(torch.log_softmax(logits, dim=-1))
-                logits = logits.detach().cpu().numpy()
-                # exp_logits = np.exp(logits)
-                # logits = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
-                logits_top_k_idxs = np.argsort(logits, axis=-1)[:, :, -data_args.top_k:]
-                logits_top_k = np.take_along_axis(logits, logits_top_k_idxs, axis=-1)
-                logits_top_k_idxs = logits_top_k_idxs.tolist()
-                logits_top_k = logits_top_k.tolist()
+                with torch.no_grad():
+                    outputs = trainer.model(**inputs)
+                    logits = outputs.logits
+                    logits = torch.exp(torch.log_softmax(logits, dim=-1))
+                    logits = logits.detach().cpu().numpy()
+                    # exp_logits = np.exp(logits)
+                    # logits = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+                    logits_top_k_idxs = np.argsort(logits, axis=-1)[:, :, -data_args.top_k:]
+                    logits_top_k = np.take_along_axis(logits, logits_top_k_idxs, axis=-1)
+                    batch_size = logits.shape[0]
+                    logits_top_k_idxs = logits_top_k_idxs.tolist()
+                    logits_top_k = logits_top_k.tolist()
 
-                # get logits at label idxs 
-                logit_at_label = outputs.logits.gather(2, inputs['labels'].unsqueeze(-1))
-                logit_at_label = logit_at_label.reshape(-1)
-                logit_at_label = logit_at_label.detach().cpu().numpy().tolist()
-                labels = inputs['labels'].detach().cpu().numpy().tolist()
-                input_str = tokenizer.batch_decode(inputs['input_ids'], skip_special_tokens=True)
-                to_append = {"top_logits": logits_top_k, "top_logit_idxs": logits_top_k_idxs, "logit_at_label": logit_at_label, "labels": labels, "input_str": input_str}
-                f1.write(json.dumps(to_append) + "\n")
+                    # get logits at label idxs 
+                    logit_at_label = outputs.logits.gather(2, inputs['labels'].unsqueeze(-1))
+                    logit_at_label = logit_at_label.reshape(-1)
+                    logit_at_label = logit_at_label.detach().cpu().numpy().tolist()
+                    labels = inputs['labels'].detach().cpu().numpy().tolist()
+                    input_str = tokenizer.batch_decode(inputs['input_ids'], skip_special_tokens=True)
 
+                for batch_idx in range(batch_size): 
+
+                    to_append = {"top_logits": logits_top_k[batch_idx], 
+                                "top_logit_idxs": logits_top_k_idxs[batch_idx], 
+                                "logit_at_label": logit_at_label[batch_idx], 
+                                "labels": labels[batch_idx], 
+                                "input_str": input_str[batch_idx]}
+
+                    f1.write(json.dumps(to_append) + "\n")
+
+                # remove from memory 
+                del inputs 
+                del outputs
+                
 if __name__ == "__main__":
     main()

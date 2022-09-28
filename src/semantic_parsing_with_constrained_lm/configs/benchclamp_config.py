@@ -4,6 +4,7 @@
 """
 Config to run training and evaluation experiments with BenchCLAMP with non-GPT-3 language models.
 """
+import pdb 
 import dataclasses
 import functools
 import json
@@ -24,6 +25,7 @@ from semantic_parsing_with_constrained_lm.configs.lib.benchclamp import (
     create_partial_parse_builder,
 )
 from semantic_parsing_with_constrained_lm.configs.lib.common import make_semantic_parser
+from semantic_parsing_with_constrained_lm.model import ProblemFactory, DecodingSetup
 from semantic_parsing_with_constrained_lm.datum import Datum, FullDatum
 from semantic_parsing_with_constrained_lm.decoding.partial_parse import (
     PartialParse,
@@ -205,7 +207,7 @@ def create_eval_exp(
     exp_name: str,
     model_config: ClampModelConfig,
     data_config: ClampDataConfig,
-    problem_type: Literal["constrained", "unconstrained-beam", "unconstrained-greedy"],
+    problem_type: Literal[ "unconstrained-beam", "unconstrained-greedy"],
     is_dev: bool,
 ) -> Experiment:
     model, tokenizer, _ = model_config.setup_model()
@@ -314,6 +316,8 @@ def create_eval_exp(
                 ),
                 1000,
             )
+
+
             parser = make_semantic_parser(
                 train_data=train_data,  # type: ignore
                 lm=lm,  # type: ignore
@@ -322,6 +326,7 @@ def create_eval_exp(
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,
                 max_steps_fn=max_steps_fn,
+                # problem_factory_builder= lambda x: ProblemFactory(x), # NOTE (elias): I added this to try to do unconstrained
             )
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
                 "exact_match": TopKExactMatch(beam_size)
@@ -334,7 +339,7 @@ def create_eval_exp(
             elif data_config.dataset_name in [
                 BenchClampDataset.Spider.value,
                 BenchClampDataset.CoSQL.value,
-            ] and problem_type in ["constrained", "unconstrained-beam"]:
+            ] and problem_type in ["unconstrained-beam"]:
                 metrics["test_suite_execution_acc"] = SQLTestSuiteMatch(
                     db_path=str(TEST_SUITE_DATABASE_PATH),
                     test_suite_path=str(TEST_SUITE_PATH),
@@ -395,7 +400,7 @@ def create_exps_dict() -> Tuple[
                 )
 
             dev_results: Dict[Tuple[str, Path], float] = {}
-            dev_complete = True
+            dev_complete = False
             for trained_model_id, trained_model_loc in trained_model_locs:
                 eval_model_config = dataclasses.replace(
                     train_model_config,
@@ -405,12 +410,14 @@ def create_exps_dict() -> Tuple[
                 eval_exp_name = f"{trained_model_id}_dev_eval"
                 # We assume sharding is not necessary for dev set TODO: Relax this assumption
                 results_file_path = LOG_DIR / VERSION / eval_exp_name / "results.json"
+                # pdb.set_trace()
                 if Path.exists(results_file_path):
+                    dev_complete = True
                     dev_results[(trained_model_id, trained_model_loc)] = json.load(
                         open(results_file_path)
                     )["exact_match/top1"]
                 else:
-                    dev_complete = False
+                    # dev_complete = False
                     eval_exps_dict[eval_exp_name] = functools.partial(
                         create_eval_exp,
                         eval_exp_name,
@@ -419,7 +426,7 @@ def create_exps_dict() -> Tuple[
                         "unconstrained-greedy",
                         is_dev=True,
                     )
-
+ 
             if dev_complete and len(dev_results) > 0:
                 print(f"All dev expts complete. Results gathered.\n{dev_results}")
                 best_trained_model_info = max(
@@ -435,7 +442,8 @@ def create_exps_dict() -> Tuple[
                         model_id=train_model_config.model_id,
                         model_loc=best_model_loc,
                     )
-                    for constrained in ["constrained", "unconstrained-beam"]:
+                    # for constrained in ["constrained", "unconstrained-beam"]:
+                    for constrained in ["unconstrained-beam"]:
                         eval_exp_name = (
                             f"{best_model_id}_test_eval_{constrained}_bs_{BEAM_SIZE}"
                         )
@@ -447,7 +455,6 @@ def create_exps_dict() -> Tuple[
                             constrained,  # type: ignore
                             is_dev=False,
                         )
-
     return train_exps_dict, eval_exps_dict
 
 

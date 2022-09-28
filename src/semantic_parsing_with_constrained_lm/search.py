@@ -144,7 +144,6 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
                 maybe_packed_node.tokens[-1:],
                 maybe_packed_node.hidden_state,
             )
-
             next_logprobs = logprobs[0]  # Remove the sequence dimension
             unnormalized_cost = maybe_packed_node.unnormalized_cost
             packed_node = maybe_packed_node.packed

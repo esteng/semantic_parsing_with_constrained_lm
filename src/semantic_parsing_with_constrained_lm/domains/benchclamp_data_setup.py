@@ -151,6 +151,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             domain=None,
             dataset_name=BenchClampDataset.CalFlowV2.value,
             input_sequence_creator=input_sequence_creator,
+            eval_on_full_test=True,
         )
         for input_sequence_creator_name, input_sequence_creator, split_names in [
             ("no_context", IdentitySequenceCreator(), BENCHCLAMP_SPLIT_NAMES),
@@ -166,6 +167,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             domain=None,
             dataset_name=BenchClampDataset.TreeDST.value,
             input_sequence_creator=input_sequence_creator,
+            eval_on_full_test=True,
         )
         for input_sequence_creator_name, input_sequence_creator, split_names in [
             ("no_context", IdentitySequenceCreator(), BENCHCLAMP_SPLIT_NAMES),
@@ -180,6 +182,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             split_name=split_name,
             domain=language,
             dataset_name=BenchClampDataset.MTOP.value,
+            eval_on_full_test=True,
         )
         for split_name in BENCHCLAMP_SPLIT_NAMES
         for language in ["en"]
@@ -190,6 +193,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             split_name=split_name,
             domain=domain,
             dataset_name=BenchClampDataset.Overnight.value,
+            eval_on_full_test=True,
         )
         for split_name in BENCHCLAMP_SPLIT_NAMES
         for domain in ["blocks"]
@@ -202,6 +206,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             input_sequence_creator=CoSqlUtterance(
                 use_db_val=True, past_utterances="none"
             ),
+            eval_on_full_test=True,
         )
         for split_name in BENCHCLAMP_SPLIT_NAMES
     ]
@@ -211,6 +216,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             split_name=split_name,
             dataset_name=BenchClampDataset.CoSQL.value,
             input_sequence_creator=input_sequence_creator,
+            eval_on_full_test=True,
         )
         for input_sequence_creator_name, input_sequence_creator, split_names in [
             (
@@ -235,6 +241,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
                 use_db_val=True, past_utterances="none"
             ),
             merge_train_and_dev=True,
+            eval_on_full_test=True,
         ),
         BenchClampDatasetConfig(
             data_id="cosql_past_all_db_val_all_merge_train_dev",
@@ -244,6 +251,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
                 use_db_val=True, past_utterances="all"
             ),
             merge_train_and_dev=True,
+            eval_on_full_test=True,
         ),
     ]
 )
