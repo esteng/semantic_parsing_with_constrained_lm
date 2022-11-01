@@ -6,5 +6,5 @@
 
 python -m semantic_parsing_with_constrained_lm.finetune.lm_finetune \
     --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_config \
-    --exp-name-pattern 't5-large-lm-adapt_calflow_last_agent_all_0.0001'
+    --exp-name-pattern 't5-large-lm-adapt_calflow_last_user_all_0.0001'
 

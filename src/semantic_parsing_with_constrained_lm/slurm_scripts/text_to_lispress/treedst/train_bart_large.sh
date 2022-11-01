@@ -6,5 +6,5 @@
 
 python -m semantic_parsing_with_constrained_lm.finetune.lm_finetune \
     --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_config \
-    --exp-name-pattern 'bart-large_tree_dst_last_user_all_1e-5'
+    --exp-name-pattern 'bart-large_tree_dst_last_user_all_1e-05'
 

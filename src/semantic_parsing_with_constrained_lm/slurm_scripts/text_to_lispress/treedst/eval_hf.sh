@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-#SBATCH -o //brtx/601-nvme1/estengel/calflow_calibration/benchclamp/logs/get_logits.out
+#SBATCH -o /dev/null
 #SBATCH -p brtx6
 #SBATCH --gpus=1
 
@@ -11,8 +11,7 @@ python text_to_lispress.py \
     --model_name_or_path ${CHECKPOINT_DIR} \
     --validation_file ${VALIDATION_FILE} \
     --output_dir ${CHECKPOINT_DIR}/outputs \
-    --per_device_eval_batch_size 8 \
     --predict_with_generate \
-    --get_logits 
+    --do_eval 
 
 

@@ -68,7 +68,10 @@ HUGGINGFACE_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingface_m
 #    Path("/mnt/my_output/trained_models/") if RUN_ON_AML else Path("trained_models/")
 #)
 TRAINED_MODEL_DIR = Path(os.environ.get("CHECKPOINT_DIR", "trained_models") )
-LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("logs/")
+# LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/601-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+# TODO(Elias): change back once done debugging
+LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+# LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs")
 VERSION = "1.0"
 
 LRS: List[float] = [1e-4, 1e-5]
@@ -326,7 +329,6 @@ def create_eval_exp(
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,
                 max_steps_fn=max_steps_fn,
-                # problem_factory_builder= lambda x: ProblemFactory(x), # NOTE (elias): I added this to try to do unconstrained
             )
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
                 "exact_match": TopKExactMatch(beam_size)

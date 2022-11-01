@@ -1,5 +1,6 @@
 import os 
-from transformers import Trainer, AutoModelForSeq2SeqLM, AutoTokenizer, DataCollatorForSeq2Seq, Seq2SeqTrainer
+import copy 
+from transformers import Trainer, AutoModelForSeq2SeqLM, AutoTokenizer, DataCollatorForSeq2Seq, Seq2SeqTrainer, HammingDiversityLogitsProcessor, LogitsProcessorList
 from transformers import HfArgumentParser, Seq2SeqTrainingArguments
 from datasets import load_dataset, load_metric 
 import numpy as np 
@@ -187,26 +188,28 @@ def main():
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
+    # trainer._gen_kwargs['num_return_sequences'] = data_args.num_return_sequences
 
-    if training_args.do_eval:
-        logger.info("*** Evaluate ***")
-        try:
-            metrics = trainer.evaluate(max_length=100, num_beams=5, metric_key_prefix="eval")
-        except RuntimeError as e:
-            pdb.set_trace()
-        max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(dev_dataset)
-        metrics["eval_samples"] = min(max_eval_samples, len(dev_dataset))
+    if training_args.do_predict:
+        logger.info("*** Predict ***")
+        beam_size = max(5, data_args.num_return_sequences)
 
-        trainer.log_metrics("eval", metrics)
-        trainer.save_metrics("eval", metrics)
+        # generate from dev dataset 
+        flat_generations = []
+        batch_iterator = trainer.get_eval_dataloader()
+        for batch in batch_iterator:
+            inputs = batch['input_ids'].to(trainer.args.device)
+            generated = trainer.model.generate(inputs,
+                                         max_length=100,
+                                         num_beams=beam_size,
+                                         num_return_sequences=data_args.num_return_sequences)
+            flat_generations.extend(generated)
 
-        predict_results = trainer.predict(
-            dev_dataset, metric_key_prefix="predict", max_length=100, num_beams=5
-        )
         if training_args.predict_with_generate:
             predictions = tokenizer.batch_decode(
-                    predict_results.predictions, skip_special_tokens=False, clean_up_tokenization_spaces=True
+                    flat_generations, skip_special_tokens=False, clean_up_tokenization_spaces=True
                 )
+                
             predictions = [pred.strip() for pred in predictions]
             output_prediction_file = os.path.join(training_args.output_dir, "generated_predictions.txt")
             #print(predictions)

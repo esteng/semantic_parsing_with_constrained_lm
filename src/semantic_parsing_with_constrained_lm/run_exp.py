@@ -232,6 +232,8 @@ async def run(
                     wrap_exception=not debug,
                 ):
                     beam_search_text = [beam.text for beam in kbest]
+                    logprobs = [beam.logprobs for beam in kbest]
+                    tokens = [beam.tokens for beam in kbest]
 
                     all_metric_results_for_datum: Dict[str, Optional[str]] = {}
                     for metric_name, metric in exp.metrics.items():
@@ -252,6 +254,8 @@ async def run(
                         test_datum.turn_part_index,
                         test_datum.agent_context,
                         test_datum.canonical,
+                        token_logprobs=logprobs,
+                        token_sequence=tokens
                     )
                     model_outputs_f.write(jsons.dumps(results) + "\n")
                     model_outputs_f.flush()

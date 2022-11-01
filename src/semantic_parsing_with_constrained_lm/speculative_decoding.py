@@ -223,7 +223,7 @@ class SpeculativeConstrainedDecodingProblem(Problem[OpenAIGPT3State, PSNSub]):
         for twl in finished:
             new_unnorm_cost = unnormalized_cost - twl.logprobs.sum().item()
             # :-1 to remove the EOS token
-            new_packed_node = packed_node.extend(twl.token_ids[:-1].tolist())
+            new_packed_node = packed_node.extend(twl.token_ids[:-1].tolist(), twl.logprobs[:-1].tolist())
 
             result.append(
                 FullSearchNode(

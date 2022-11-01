@@ -5,7 +5,7 @@ from tqdm import tqdm
 import json 
 import torch 
 from typing import List
-from transformers import Trainer, AutoModelForSeq2SeqLM, AutoTokenizer, DataCollatorForSeq2Seq, Seq2SeqTrainer
+from transformers import Trainer, AutoModelForSeq2SeqLM, AutoTokenizer, DataCollatorForSeq2Seq, DataCollatorWithPadding, Seq2SeqTrainer
 from transformers.tokenization_utils import PreTrainedTokenizer
 from transformers import HfArgumentParser, Seq2SeqTrainingArguments
 from datasets import load_dataset, load_metric 
@@ -183,6 +183,7 @@ def main():
         result = {
                 "input_ids": model_inputs,
                 "labels": labels,
+                # "labels": [None for x in range(len(model_inputs))],
                 "length": [len(x) for x in model_inputs],
             }
         return result
@@ -195,6 +196,7 @@ def main():
     dev_dataset = dev_dataset.map(preprocess, batched=True, remove_columns=raw_datasets['dev'].column_names, load_from_cache_file=False )
 
     data_collator = DataCollatorForSeq2Seq(tokenizer.tokenizer, model=model)
+    # data_collator = DataCollatorWithPadding(tokenizer.tokenizer, padding=True)
 
     trainer = Seq2SeqTrainer(
         model=model,
@@ -220,24 +222,42 @@ def main():
         pred = re.sub("</s>", "", pred)
         return pred 
 
-    if training_args.predict_with_generate:
-        predict_results = trainer.predict(
-            dev_dataset, metric_key_prefix="predict", max_length=200, num_beams=5
-        )
+    # if training_args.predict_with_generate:
+    if False:
+        # skip this for now 
+        model.eval()
+        with torch.no_grad():
+            dataloader = trainer.get_eval_dataloader()
+            predictions = []
+            for batch in tqdm(dataloader):
+                batch['decoder_start_token_id'] = torch.cat([
+                                        torch.ones((batch['input_ids'].shape[0], 1), dtype=torch.long) * 2,
+                                        torch.zeros((batch['input_ids'].shape[0], 1), dtype=torch.long) ], dim=-1)
+                batch = {k: v.to(model.device) for k, v in batch.items()}
+                # pdb.set_trace()
+                outputs = model.generate(**batch, max_length = 200, num_beams = 1) 
+                for idx in range(outputs.shape[0]):
+                    out = outputs[idx].detach().cpu().numpy().tolist()
+                    pdb.set_trace()
+                    predictions.append(out)
+            predictions = [tokenizer.decode(x) for x in predictions]
+            predictions = map(postprocess_and_clean, predictions)
+            output_prediction_file = os.path.join(training_args.output_dir, f"{split}.tgt")
+            with open(output_prediction_file, "w") as writer:
+                writer.write("\n".join(predictions))
 
-        # predictions = tokenizer.decode(
-                # predict_results.predictions.tolist(), # clean_up_tokenization_spaces=True
-            # )
-        # pdb.set_trace()
-        predictions = [tokenizer.decode(x) for x in predict_results.predictions.tolist()]
-        # predictions = [pred.strip() for pred in predictions]
-        # predictions = [re.sub("<.*?>", "", pred) for pred in predictions]
-        predictions = map(postprocess_and_clean, predictions)
-        output_prediction_file = os.path.join(training_args.output_dir, f"{split}.tgt")
-        #print(predictions)
 
-        with open(output_prediction_file, "w") as writer:
-            writer.write("\n".join(predictions))
+
+    # if training_args.predict_with_generate:
+    #     predict_results = trainer.predict(
+    #         dev_dataset, metric_key_prefix="predict", max_length=200, num_beams=1
+    #     )
+    #     predictions = [tokenizer.decode(x) for x in predict_results.predictions.tolist()]
+    #     predictions = map(postprocess_and_clean, predictions)
+
+    #     output_prediction_file = os.path.join(training_args.output_dir, f"{split}.tgt")
+    #     with open(output_prediction_file, "w") as writer:
+    #         writer.write("\n".join(predictions))
 
     
     if data_args.get_logits:
@@ -262,19 +282,35 @@ def main():
                     logits_top_k = logits_top_k.tolist()
 
                     # get logits at label idxs 
-                    logit_at_label = outputs.logits.gather(2, inputs['labels'].unsqueeze(-1))
-                    logit_at_label = logit_at_label.reshape(-1)
+                    # handle pad tokens
+                    unsqueezed_labels = inputs['labels'].unsqueeze(-1)
+                    labels_to_gather = unsqueezed_labels.clone()
+                    labels_to_gather[unsqueezed_labels == -100] = 0
+                    logit_at_label = outputs.logits.gather(2, labels_to_gather)
+                    logit_at_label[unsqueezed_labels == -100] = -100
+                    
+                    logit_at_label = logit_at_label.squeeze(-1)
                     logit_at_label = logit_at_label.detach().cpu().numpy().tolist()
                     labels = inputs['labels'].detach().cpu().numpy().tolist()
-                    input_str = tokenizer.decode(inputs['input_ids']) #, skip_special_tokens=True)
+                    inputs = inputs['input_ids'].detach().cpu().numpy().tolist()
+                    input_str = [tokenizer.decode(x) for x in inputs] #, skip_special_tokens=True)
 
                 for batch_idx in range(batch_size): 
+                    # trim off padding
+                    instance_logit_at_label = logit_at_label[batch_idx]
+                    instance_logit_at_label = [x for x in instance_logit_at_label if x != -100]
+                    instance_labels = labels[batch_idx]
+                    instance_labels = [x for x in instance_labels if x != -100]
+                    instance_input_str = input_str[batch_idx]
+                    instance_input_str = re.sub("<pad>", "", instance_input_str)
+                    instance_top_logits = logits_top_k[batch_idx][0:len(instance_labels)]
+                    instance_top_logit_idxs = logits_top_k_idxs[batch_idx][0:len(instance_labels)]
 
-                    to_append = {"top_logits": logits_top_k[batch_idx], 
-                                "top_logit_idxs": logits_top_k_idxs[batch_idx], 
-                                "logit_at_label": logit_at_label[batch_idx], 
-                                "labels": labels[batch_idx], 
-                                "input_str": input_str[batch_idx]}
+                    to_append = {"top_logits": instance_top_logits,
+                                "top_logit_idxs": instance_top_logit_idxs,
+                                "logit_at_label": instance_logit_at_label,
+                                "labels": instance_labels,
+                                "input_str": instance_input_str}
 
                     f1.write(json.dumps(to_append) + "\n")
 

@@ -66,7 +66,7 @@ HUGGINGFACE_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingface_m
 #    Path("/mnt/my_output/trained_models/") if RUN_ON_AML else Path("trained_models/")
 #)
 TRAINED_MODEL_DIR = Path(os.environ.get("CHECKPOINT_DIR", "trained_models_reversed") )
-LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("logs/")
+LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/601-nvme1/estengel/calflow_calibration/benchclamp/logs/")
 VERSION = "1.0"
 
 LRS: List[float] = [1e-4, 1e-5]
@@ -120,16 +120,21 @@ TRAIN_MODEL_CONFIGS: List[ClampModelConfig] = [
     BartModelConfig(
         model_id="bart-large", model_loc=HUGGINGFACE_MODEL_DIR / "bart-large"
     ),
+    BartModelConfig(
+        model_id="bart-base", model_loc=HUGGINGFACE_MODEL_DIR / "bart-base"
+    ),
 ]
 
 BATCH_SIZE_PER_DEVICE_OVERRIDES: Dict[str, int] = {
     f"{lm}_{dataset}_{inp}_{split_id}_{lr}": batch_size
-    for lm in ["t5-xl-lm-adapt"]
-    for dataset in ["spider", "cosql"]
+    for lm in ["t5-xl-lm-adapt", "t5-large-lm-adapt"]
+    for dataset in ["spider", "cosql", "calflow", "tree_dst"]
     for inp, batch_size in [
         ("past_none_db_val", 1),
         ("past_one_db_val", 1),
         ("past_all_db_val", 1),
+        ("last_agent", 2),
+        ("last_user", 2),
     ]
     for lr in ["0.0001"]
     for split_id in ["low_0", "low_1", "low_2", "medium_0", "all"]

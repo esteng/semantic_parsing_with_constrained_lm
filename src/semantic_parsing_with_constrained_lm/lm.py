@@ -222,7 +222,6 @@ class Seq2SeqHelper:
             + list(self.tokenizer.encode(string_to_tokenize))
             + self.settings.input_surround.eos
         )
-        import pdb; pdb.set_trace()
         return token_ids
 
     def encode_prefix_for_decoder(
@@ -232,7 +231,6 @@ class Seq2SeqHelper:
         if self.settings.output_surround.starts_with_space:
             string_to_tokenize = " " + s
         token_ids = self.tokenizer.encode(string_to_tokenize)
-        import pdb; pdb.set_trace()
         
         if include_bos_ids:
             return self.decoder_start_token_ids + token_ids

@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-#SBATCH -o /home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs/train.out
+#SBATCH -o /dev/null
 #SBATCH -p brtx6
 #SBATCH --gpus=1
 
@@ -12,6 +12,5 @@ python text_to_lispress.py \
     --validation_file ${VALIDATION_FILE} \
     --output_dir ${CHECKPOINT_DIR}/outputs \
     --predict_with_generate \
-    --do_eval 
-
+    --do_predict
 
