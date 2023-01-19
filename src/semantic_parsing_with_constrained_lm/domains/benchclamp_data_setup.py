@@ -124,6 +124,7 @@ class BenchClampDataset(str, Enum):
     MTOP = "MTOP"
     Spider = "Spider"
     CoSQL = "CoSQL"
+    LAmP = "LAmP"
 
 
 OVERNIGHT_DOMAINS = [
@@ -150,6 +151,22 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             split_name=split_name,
             domain=None,
             dataset_name=BenchClampDataset.CalFlowV2.value,
+            input_sequence_creator=input_sequence_creator,
+            eval_on_full_test=True,
+        )
+        for input_sequence_creator_name, input_sequence_creator, split_names in [
+            ("no_context", IdentitySequenceCreator(), BENCHCLAMP_SPLIT_NAMES),
+            ("last_agent", LastAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
+            ("last_user", LastUserAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
+        ]
+        for split_name in split_names
+    ]
+    + [
+        BenchClampDatasetConfig(
+            data_id=f"lamp_{input_sequence_creator_name}_{split_name}",
+            split_name=split_name,
+            domain=None,
+            dataset_name=BenchClampDataset.LAmP.value,
             input_sequence_creator=input_sequence_creator,
             eval_on_full_test=True,
         )

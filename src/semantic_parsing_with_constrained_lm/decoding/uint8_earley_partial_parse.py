@@ -146,7 +146,7 @@ class UInt8EarleyPartialParse(PartialParse):
             for i in ordered_ids_list:
                 if token_id_is_valid(i):
                     yield i
-
+          
         # TODO: Add special case where grammar_node.children has no elements
         # (i.e. tokens_list will be empty)
         tokens_list = list(itertools.islice(produce_valid_tokens(), top_k))
