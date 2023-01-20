@@ -91,14 +91,17 @@ class BenchClampDatasetConfig(ClampDataConfig):
         if "low" in self.split_name:
             dev_data_suffix = "low"
         else:
-            dev_data_suffix = "medium"
+            # dev_data_suffix = "medium"
+            dev_data_suffix = self.split_name
         train_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}train_{self.split_name}.jsonl"
         print(train_data_file) 
         dev_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}dev_{dev_data_suffix}.jsonl"
         if self.eval_on_full_test:
             test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test_all.jsonl"
         else:
-            test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
+            # test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
+            test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test_{dev_data_suffix}.jsonl"
+
         with BlobFile(str(train_data_file)) as bf:
             print(f"Reading {train_data_file}")
             train_data = data_from_textio(bf)
@@ -141,7 +144,7 @@ OVERNIGHT_DOMAINS = [
 MTOP_LANGUAGES = ["de", "en", "es", "fr", "hi", "th"]
 
 BENCHCLAMP_SPLIT_NAMES: List[str] = (
-    [f"low_{i}" for i in range(3)] + [f"medium_{i}" for i in range(1)] + ["all"]
+    [f"low_{i}" for i in range(3)] + [f"medium_{i}" for i in range(1)] + ["all"] + ["unambiguous"]
 )
 
 BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
@@ -168,7 +171,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             domain=None,
             dataset_name=BenchClampDataset.LAmP.value,
             input_sequence_creator=input_sequence_creator,
-            eval_on_full_test=True,
+            eval_on_full_test=False,
         )
         for input_sequence_creator_name, input_sequence_creator, split_names in [
             ("no_context", IdentitySequenceCreator(), BENCHCLAMP_SPLIT_NAMES),

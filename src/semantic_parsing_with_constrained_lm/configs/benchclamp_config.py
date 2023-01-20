@@ -151,7 +151,7 @@ BATCH_SIZE_PER_DEVICE_OVERRIDES: Dict[str, int] = {
         ("last_user", 2),
     ]
     for lr in ["0.0001"]
-    for split_id in ["low_0", "low_1", "low_2", "medium_0", "all"]
+    for split_id in ["low_0", "low_1", "low_2", "medium_0", "all", "unambiguous"]
 }
 
 
