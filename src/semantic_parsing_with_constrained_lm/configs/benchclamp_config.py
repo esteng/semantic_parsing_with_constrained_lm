@@ -37,6 +37,7 @@ from semantic_parsing_with_constrained_lm.domains.benchclamp_data_setup import (
     BenchClampDatasetConfig,
     ClampDataConfig,
 )
+
 from semantic_parsing_with_constrained_lm.domains.lispress_v2.lispress_exp import TopKLispressMatch
 from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, OvernightPieces
 from semantic_parsing_with_constrained_lm.domains.sql.sql_metric import SQLTestSuiteMatch
@@ -70,7 +71,8 @@ HUGGINGFACE_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingface_m
 TRAINED_MODEL_DIR = Path(os.environ.get("CHECKPOINT_DIR", "trained_models") )
 # LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/601-nvme1/estengel/calflow_calibration/benchclamp/logs/")
 # TODO(Elias): change back once done debugging
-LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+# LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/ambiguous_parsing/benchclamp/logs/")
 # LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs")
 VERSION = "1.0"
 
@@ -157,7 +159,7 @@ TRAIN_MODEL_CONFIGS: List[ClampModelConfig] = [
 BATCH_SIZE_PER_DEVICE_OVERRIDES: Dict[str, int] = {
     f"{lm}_{dataset}_{inp}_{split_id}_{lr}": batch_size
     for lm in ["t5-xl-lm-adapt", "t5-large-lm-adapt"]
-    for dataset in ["spider", "cosql", "calflow", "tree_dst"]
+    for dataset in ["spider", "cosql", "calflow", "tree_dst", "lamp"]
     for inp, batch_size in [
         ("past_none_db_val", 1),
         ("past_one_db_val", 1),
@@ -166,7 +168,7 @@ BATCH_SIZE_PER_DEVICE_OVERRIDES: Dict[str, int] = {
         ("last_user", 2),
     ]
     for lr in ["0.0001"]
-    for split_id in ["low_0", "low_1", "low_2", "medium_0", "all"]
+    for split_id in ["low_0", "low_1", "low_2", "medium_0", "all", "unambiguous"]
 }
 
 
@@ -227,7 +229,7 @@ def create_eval_exp(
     exp_name: str,
     model_config: ClampModelConfig,
     data_config: ClampDataConfig,
-    problem_type: Literal[ "unconstrained-beam", "unconstrained-greedy"],
+    problem_type: Literal[ "unconstrained-beam", "unconstrained-greedy", "constrained"],
     is_dev: bool,
 ) -> Experiment:
     model, tokenizer, _ = model_config.setup_model()
@@ -461,8 +463,8 @@ def create_exps_dict() -> Tuple[
                         model_id=train_model_config.model_id,
                         model_loc=best_model_loc,
                     )
-                    # for constrained in ["constrained", "unconstrained-beam"]:
-                    for constrained in ["unconstrained-beam"]:
+                    for constrained in ["constrained", "unconstrained-beam"]:
+                    # for constrained in ["unconstrained-beam"]:
                         eval_exp_name = (
                             f"{best_model_id}_test_eval_{constrained}_bs_{BEAM_SIZE}"
                         )
@@ -474,6 +476,8 @@ def create_exps_dict() -> Tuple[
                             constrained,  # type: ignore
                             is_dev=False,
                         )
+                        # TODO (elias): May need to delete this if it's causing 
+                        # model to hang up because of missing dev experiments
                         dev_eval_exp_name = (
                             f"{best_model_id}_dev_eval_{constrained}_bs_{BEAM_SIZE}"
                         )
