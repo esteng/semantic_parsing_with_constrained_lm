@@ -2,7 +2,7 @@
 
 #SBATCH -o /dev/null
 #SBATCH -p brtx6
-#SBATCH --gpus=6
+#SBATCH --gpus=1
 
 export CHECKPOINT_DIR=/brtx/605-nvme1/estengel/calflow_calibration/benchclamp/text_to_treedst/
 #python -m semantic_parsing_with_constrained_lm.run_exp \

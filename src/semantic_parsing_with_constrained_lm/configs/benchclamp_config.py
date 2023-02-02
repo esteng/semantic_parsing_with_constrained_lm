@@ -104,7 +104,14 @@ TRAIN_MODEL_CONFIGS: List[ClampModelConfig] = [
     T5ModelConfig(
         model_id="t5-large-lm-adapt",
         model_loc=HUGGINGFACE_MODEL_DIR / "t5-large-lm-adapt",
-        device_map={0: list(range(10)), 1: list(range(10, 24))}
+        device_map={
+            0: list(range(3)),
+            1: list(range(3, 10)),
+            2: list(range(10, 17)),
+            3: list(range(17, 24)),
+        }
+        if torch.cuda.device_count() >= 4
+        else {0: list(range(10)), 1: list(range(10, 24))}
         if torch.cuda.device_count() >= 2
         else None,
     ),
@@ -130,7 +137,17 @@ TRAIN_MODEL_CONFIGS: List[ClampModelConfig] = [
         else None,
     ),
     BartModelConfig(
-        model_id="bart-large", model_loc=HUGGINGFACE_MODEL_DIR / "bart-large"
+        model_id="bart-large", model_loc=HUGGINGFACE_MODEL_DIR / "bart-large",
+        device_map={
+            0: list(range(3)),
+            1: list(range(3, 10)),
+            2: list(range(10, 17)),
+            3: list(range(17, 24)),
+        }
+        if torch.cuda.device_count() >= 4
+        else {0: list(range(10)), 1: list(range(10, 24))}
+        if torch.cuda.device_count() >= 2
+        else None,
     ),
     BartModelConfig(
         model_id="bart-base", model_loc=HUGGINGFACE_MODEL_DIR / "bart-base"
@@ -456,6 +473,17 @@ def create_exps_dict() -> Tuple[
                             data_config,
                             constrained,  # type: ignore
                             is_dev=False,
+                        )
+                        dev_eval_exp_name = (
+                            f"{best_model_id}_dev_eval_{constrained}_bs_{BEAM_SIZE}"
+                        )
+                        eval_exps_dict[dev_eval_exp_name] = functools.partial(
+                            create_eval_exp,
+                            dev_eval_exp_name,
+                            eval_model_config,
+                            data_config,
+                            constrained,  # type: ignore
+                            is_dev=True,
                         )
     return train_exps_dict, eval_exps_dict
 
