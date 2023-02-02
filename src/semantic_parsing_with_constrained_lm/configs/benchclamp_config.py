@@ -71,8 +71,8 @@ HUGGINGFACE_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingface_m
 TRAINED_MODEL_DIR = Path(os.environ.get("CHECKPOINT_DIR", "trained_models") )
 # LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/601-nvme1/estengel/calflow_calibration/benchclamp/logs/")
 # TODO(Elias): change back once done debugging
-# LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
-LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/ambiguous_parsing/benchclamp/logs/")
+LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+# LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/ambiguous_parsing/benchclamp/logs/")
 # LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs")
 VERSION = "1.0"
 
@@ -168,7 +168,7 @@ BATCH_SIZE_PER_DEVICE_OVERRIDES: Dict[str, int] = {
         ("last_user", 2),
     ]
     for lr in ["0.0001"]
-    for split_id in ["low_0", "low_1", "low_2", "medium_0", "all", "unambiguous"]
+    for split_id in ["low_0", "low_1", "low_2", "medium_0", "all", "tiny"]
 }
 
 
@@ -360,7 +360,8 @@ def create_eval_exp(
             elif data_config.dataset_name in [
                 BenchClampDataset.Spider.value,
                 BenchClampDataset.CoSQL.value,
-            ] and problem_type in ["unconstrained-beam"]:
+            ] and problem_type in ["constrained", "unconstrained-beam"]:
+                pdb.set_trace()
                 metrics["test_suite_execution_acc"] = SQLTestSuiteMatch(
                     db_path=str(TEST_SUITE_DATABASE_PATH),
                     test_suite_path=str(TEST_SUITE_PATH),
@@ -463,8 +464,8 @@ def create_exps_dict() -> Tuple[
                         model_id=train_model_config.model_id,
                         model_loc=best_model_loc,
                     )
-                    for constrained in ["constrained", "unconstrained-beam"]:
-                    # for constrained in ["unconstrained-beam"]:
+                    # for constrained in ["constrained", "unconstrained-beam"]:
+                    for constrained in ["unconstrained-beam"]:
                         eval_exp_name = (
                             f"{best_model_id}_test_eval_{constrained}_bs_{BEAM_SIZE}"
                         )

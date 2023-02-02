@@ -92,9 +92,12 @@ class BenchClampDatasetConfig(ClampDataConfig):
             dev_data_suffix = "low"
         elif "all" in self.split_name:
             dev_data_suffix = "all" 
+        elif "tiny" in self.split_name:
+            dev_data_suffix = "tiny" 
         else:
             # dev_data_suffix = "medium"
             dev_data_suffix = self.split_name
+
         train_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}train_{self.split_name}.jsonl"
         print(train_data_file) 
         dev_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}dev_{dev_data_suffix}.jsonl"
@@ -146,7 +149,7 @@ OVERNIGHT_DOMAINS = [
 MTOP_LANGUAGES = ["de", "en", "es", "fr", "hi", "th"]
 
 BENCHCLAMP_SPLIT_NAMES: List[str] = (
-    [f"low_{i}" for i in range(3)] + [f"medium_{i}" for i in range(1)] + ["all"] + ["unambiguous"]
+    [f"low_{i}" for i in range(3)] + [f"medium_{i}" for i in range(1)] + ["all"] + ["tiny"]
 )
 
 BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
@@ -166,22 +169,23 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
         ]
         for split_name in split_names
     ]
-    + [
-        BenchClampDatasetConfig(
-            data_id=f"lamp_{input_sequence_creator_name}_{split_name}",
-            split_name=split_name,
-            domain=None,
-            dataset_name=BenchClampDataset.LAmP.value,
-            input_sequence_creator=input_sequence_creator,
-            eval_on_full_test=False,
-        )
-        for input_sequence_creator_name, input_sequence_creator, split_names in [
-            ("no_context", IdentitySequenceCreator(), BENCHCLAMP_SPLIT_NAMES),
-            ("last_agent", LastAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
-            ("last_user", LastUserAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
-        ]
-        for split_name in split_names
-    ]
+    # TODO (elias): exclude LaMP for the SQL experiments
+    # + [
+    #     BenchClampDatasetConfig(
+    #         data_id=f"lamp_{input_sequence_creator_name}_{split_name}",
+    #         split_name=split_name,
+    #         domain=None,
+    #         dataset_name=BenchClampDataset.LAmP.value,
+    #         input_sequence_creator=input_sequence_creator,
+    #         eval_on_full_test=False,
+    #     )
+    #     for input_sequence_creator_name, input_sequence_creator, split_names in [
+    #         ("no_context", IdentitySequenceCreator(), BENCHCLAMP_SPLIT_NAMES),
+    #         ("last_agent", LastAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
+    #         ("last_user", LastUserAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
+    #     ]
+    #     for split_name in split_names
+    # ]
     + [
         BenchClampDatasetConfig(
             data_id=f"tree_dst_{input_sequence_creator_name}_{split_name}",
