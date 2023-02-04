@@ -16,8 +16,8 @@ from typing import Optional
 import logging 
 
 from semantic_parsing_with_constrained_lm.tokenization import ClampTokenizer, T5ClampTokenizer, GPT2ClampTokenizer
-from semantic_parsing_with_constrained_lm.datum import BenchClampDatum
-from semantic_parsing_with_constrained_lm.domains.benchclamp_data_setup import BenchClampDataset
+from semantic_parsing_with_constrained_lm.datum import BenchClampDatum, FullDatum
+from semantic_parsing_with_constrained_lm.domains.benchclamp_data_setup import BenchClampDataset, data_from_textio
 from semantic_parsing_with_constrained_lm.domains.sql.sequence_creator import CoSqlUtterance
 from semantic_parsing_with_constrained_lm.domains.sql.cosql.dialogue import load_cosql_data, convert_cosql_to_datum_format
 from semantic_parsing_with_constrained_lm.domains.sql.cosql.schema import DbSchema, load_schemas
@@ -25,6 +25,7 @@ from semantic_parsing_with_constrained_lm.paths import (
     BENCH_CLAMP_PROCESSED_DATA_DIR,
     BENCH_CLAMP_RAW_DATA_DIR,
 )
+from semantic_parsing_with_constrained_lm.domains.sql.sql_datum import SqlDatum
 logger = logging.getLogger(__name__)
 
 
@@ -145,7 +146,8 @@ def main():
 
     model = AutoModelForSeq2SeqLM.from_pretrained(model_args.model_name_or_path)
 
-    is_sql = "spider" in args.model_name_or_path or "cosql" in args.model_name_or_path
+    is_sql = "spider" in model_args.model_name_or_path or "cosql" in model_args.model_name_or_path
+    is_spider = "spider" in model_args.model_name_or_path 
 
     def encode_for_encoder(s: str) -> List[int]:
         string_to_tokenize = s
@@ -215,18 +217,24 @@ def main():
 
 
     if is_sql:
+        if is_spider: 
+            input_sequence_creator = CoSqlUtterance(use_db_val = True, past_utterances = "none")
+        else:
+            input_sequence_creator = CoSqlUtterance(use_db_val = True, past_utterances = "all")
         with open(data_args.validation_file) as f:
-            data = [json.loads(l) for l in f.readlines()]
-        loaded_dialogues = load_cosql_data(data)
+            data = data_from_textio(f)
 
-        raw_cosql_dir = BENCH_CLAMP_RAW_DATA_DIR / BenchClampDataset.CoSQL.value
-        cosql_schemas = load_schemas(
-            schemas_path=raw_cosql_dir / "tables.json", db_path=raw_cosql_dir / "database"
-        )
-
-        datum_dialogues = convert_cosql_to_datum_format(loaded_dialogues,
-            db_map=cosql_schemas,
-            db_path=str(raw_cosql_dir / "database")) 
+        data_for_expt = []
+        for datum in data:
+            input_sequence = input_sequence_creator.create_sequence(datum)
+            input_sequence = f" {input_sequence}</s>"
+            output_sequence = datum.plan
+            output_sequence = f" {output_sequence}</s>"
+            print(input_sequence)
+            print(len(input_sequence))
+            print(output_sequence)
+            print(len(output_sequence))
+            pdb.set_trace()
     else:
         data_files = {"dev": data_args.validation_file}
         split = Path(data_args.validation_file).stem

@@ -253,7 +253,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             (
                 "past_all_db_val",
                 CoSqlUtterance(use_db_val=True, past_utterances="all"),
-                ["medium_0", "all"],
+                ["medium_0", "all", "tiny"],
             ),
         ]
         for split_name in split_names

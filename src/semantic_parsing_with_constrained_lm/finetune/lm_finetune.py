@@ -264,6 +264,8 @@ def run(
         ),
     )
     train_dataset = exp.make_clamp_dataset(exp.train_data)
+    pdb.set_trace()
+
     eval_dataset = exp.make_clamp_dataset(exp.eval_data)
     if log_dir is not None:
         exp.training_args.logging_dir = log_dir / exp_name

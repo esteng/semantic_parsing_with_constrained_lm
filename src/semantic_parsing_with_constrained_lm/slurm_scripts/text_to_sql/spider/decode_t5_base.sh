@@ -8,6 +8,6 @@ python -m semantic_parsing_with_constrained_lm.run_exp \
     --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_config \
     --exp-name-pattern 't5-base-lm-adapt_spider_past.*all.*0.0001.*dev_eval.*'
 
-python -m semantic_parsing_with_constrained_lm.run_exp \
-    --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_config \
-    --exp-name-pattern 't5-base-lm-adapt_spider_past.*all.*0.0001.*test_eval.*'
+# python -m semantic_parsing_with_constrained_lm.run_exp \
+#     --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_config \
+#     --exp-name-pattern 't5-base-lm-adapt_spider_past.*all.*0.0001.*test_eval.*'
