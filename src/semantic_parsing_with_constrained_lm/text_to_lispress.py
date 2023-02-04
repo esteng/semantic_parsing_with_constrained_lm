@@ -16,6 +16,15 @@ from typing import Optional
 import logging 
 
 from semantic_parsing_with_constrained_lm.tokenization import ClampTokenizer, T5ClampTokenizer, GPT2ClampTokenizer
+from semantic_parsing_with_constrained_lm.datum import BenchClampDatum
+from semantic_parsing_with_constrained_lm.domains.benchclamp_data_setup import BenchClampDataset
+from semantic_parsing_with_constrained_lm.domains.sql.sequence_creator import CoSqlUtterance
+from semantic_parsing_with_constrained_lm.domains.sql.cosql.dialogue import load_cosql_data, convert_cosql_to_datum_format
+from semantic_parsing_with_constrained_lm.domains.sql.cosql.schema import DbSchema, load_schemas
+from semantic_parsing_with_constrained_lm.paths import (
+    BENCH_CLAMP_PROCESSED_DATA_DIR,
+    BENCH_CLAMP_RAW_DATA_DIR,
+)
 logger = logging.getLogger(__name__)
 
 
@@ -136,6 +145,8 @@ def main():
 
     model = AutoModelForSeq2SeqLM.from_pretrained(model_args.model_name_or_path)
 
+    is_sql = "spider" in args.model_name_or_path or "cosql" in args.model_name_or_path
+
     def encode_for_encoder(s: str) -> List[int]:
         string_to_tokenize = s
         # if self.settings.input_surround.starts_with_space:
@@ -152,8 +163,26 @@ def main():
         token_ids = tokenizer.encode(string_to_tokenize)
         return token_ids
 
+    def preprocess_sql(examples):
+        datum_parser = CoSqlUtterance(use_db_val = True,
+                                        past_utterances = "all")
+        # list of utterances per datapoint 
+        for ex in examples: 
+            utts = ex['utterance']
+            if len(utts) == 1:
+                past_utterances = None
+            else:
+                past_utts = utts[:-1]
+                utt = utts[-1]
+            
+
+            datum = BenchClampDatum()
+        # 
+
+    # TODO: (elias): ensure that this function remains accurate for sql 
     def preprocess(examples):
         input = [datapoint for datapoint in examples['utterance']]
+        pdb.set_trace() 
         prefix_last_user = [utt for utt in examples['last_user_utterance']]
         prefix_last_agent = [utt for utt in examples['last_agent_utterance']]
 
@@ -168,7 +197,6 @@ def main():
             else:
                 input[i] = f" {input[i]}</s>"
 
-        # model_inputs = tokenizer(input, padding=True, truncation=True)
         model_inputs = [encode_for_encoder(x) for x in input]
 
         if "bart" in model_args.model_name_or_path:
@@ -176,9 +204,6 @@ def main():
         else:
             output = [f" {datapoint}</s>" for datapoint in examples['plan']]
         labels = [encode_for_decoder(x) for x in output]
-        # pdb.set_trace()
-        # labels = tokenizer(output, padding=True, truncation=True)
-        # model_inputs["labels"] = [x['input_ids'] for x in labels ] #labels["input_ids"]
 
         result = {
                 "input_ids": model_inputs,
@@ -188,15 +213,29 @@ def main():
             }
         return result
 
-    data_files = {"dev": data_args.validation_file}
-    split = Path(data_args.validation_file).stem
-    raw_datasets = load_dataset("json", data_files = data_files)
 
-    dev_dataset = raw_datasets['dev']
-    dev_dataset = dev_dataset.map(preprocess, batched=True, remove_columns=raw_datasets['dev'].column_names, load_from_cache_file=False )
+    if is_sql:
+        with open(data_args.validation_file) as f:
+            data = [json.loads(l) for l in f.readlines()]
+        loaded_dialogues = load_cosql_data(data)
+
+        raw_cosql_dir = BENCH_CLAMP_RAW_DATA_DIR / BenchClampDataset.CoSQL.value
+        cosql_schemas = load_schemas(
+            schemas_path=raw_cosql_dir / "tables.json", db_path=raw_cosql_dir / "database"
+        )
+
+        datum_dialogues = convert_cosql_to_datum_format(loaded_dialogues,
+            db_map=cosql_schemas,
+            db_path=str(raw_cosql_dir / "database")) 
+    else:
+        data_files = {"dev": data_args.validation_file}
+        split = Path(data_args.validation_file).stem
+        raw_datasets = load_dataset("json", data_files = data_files)
+
+        dev_dataset = raw_datasets['dev']
+        dev_dataset = dev_dataset.map(preprocess, batched=True, remove_columns=raw_datasets['dev'].column_names, load_from_cache_file=False )
 
     data_collator = DataCollatorForSeq2Seq(tokenizer.tokenizer, model=model)
-    # data_collator = DataCollatorWithPadding(tokenizer.tokenizer, padding=True)
 
     trainer = Seq2SeqTrainer(
         model=model,
@@ -208,6 +247,7 @@ def main():
         compute_metrics=None,
     )
 
+    # TODO: (elias): ensure that this function works for SQL, add any extra rules     
     def postprocess_and_clean(pred):
         is_small = "small" in model_args.model_name_or_path
         pred = pred.strip()
@@ -221,44 +261,6 @@ def main():
         pred = re.sub("<s>", "", pred)
         pred = re.sub("</s>", "", pred)
         return pred 
-
-    # if training_args.predict_with_generate:
-    if False:
-        # skip this for now 
-        model.eval()
-        with torch.no_grad():
-            dataloader = trainer.get_eval_dataloader()
-            predictions = []
-            for batch in tqdm(dataloader):
-                batch['decoder_start_token_id'] = torch.cat([
-                                        torch.ones((batch['input_ids'].shape[0], 1), dtype=torch.long) * 2,
-                                        torch.zeros((batch['input_ids'].shape[0], 1), dtype=torch.long) ], dim=-1)
-                batch = {k: v.to(model.device) for k, v in batch.items()}
-                # pdb.set_trace()
-                outputs = model.generate(**batch, max_length = 200, num_beams = 1) 
-                for idx in range(outputs.shape[0]):
-                    out = outputs[idx].detach().cpu().numpy().tolist()
-                    pdb.set_trace()
-                    predictions.append(out)
-            predictions = [tokenizer.decode(x) for x in predictions]
-            predictions = map(postprocess_and_clean, predictions)
-            output_prediction_file = os.path.join(training_args.output_dir, f"{split}.tgt")
-            with open(output_prediction_file, "w") as writer:
-                writer.write("\n".join(predictions))
-
-
-
-    # if training_args.predict_with_generate:
-    #     predict_results = trainer.predict(
-    #         dev_dataset, metric_key_prefix="predict", max_length=200, num_beams=1
-    #     )
-    #     predictions = [tokenizer.decode(x) for x in predict_results.predictions.tolist()]
-    #     predictions = map(postprocess_and_clean, predictions)
-
-    #     output_prediction_file = os.path.join(training_args.output_dir, f"{split}.tgt")
-    #     with open(output_prediction_file, "w") as writer:
-    #         writer.write("\n".join(predictions))
-
     
     if data_args.get_logits:
         eval_dataloader = trainer.get_eval_dataloader()

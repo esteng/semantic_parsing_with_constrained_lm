@@ -36,8 +36,8 @@ from semantic_parsing_with_constrained_lm.tokenization import ClampTokenizer
 
 TEST_SUITE_PATH = Path("/home/estengel/semantic_parsing_with_constrained_lm/third_party/test-suite-sql-eval") 
 TEST_SUITE_DATABASE_PATH = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/test_sql/database/")
-SPIDER_DATABASE_PATH = Path("/mnt/my_input/Spider/database/")
-SPIDER_TABLES_FILE = Path("/mnt/my_input/Spider/tables.json")
+SPIDER_DATABASE_PATH = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/Spider//database/")
+SPIDER_TABLES_FILE = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/Spider/tables.json")
 COSQL_DATABASE_PATH = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/CoSQL/database/")
 COSQL_TABLES_FILE = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/tables.json")
 

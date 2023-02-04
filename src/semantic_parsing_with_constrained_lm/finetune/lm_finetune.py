@@ -28,7 +28,10 @@ from semantic_parsing_with_constrained_lm.run_exp import filter_exp_dict
 from semantic_parsing_with_constrained_lm.tokenization import ClampTokenizer
 
 PRETRAINED_MODEL_DIR = os.environ.get("PRETRAINED_MODEL_DIR", "")
+
 MAX_OUTPUT_SEQUENCE_FOR_TRAINING = 500
+# TODO: (elias): the BART problem doesn't seems to go away even if we reduce by a lot 
+# MAX_OUTPUT_SEQUENCE_FOR_TRAINING = 50
 
 
 @dataclass
@@ -138,6 +141,11 @@ class ClampDataset(Dataset):
             + self.tokenizer.encode(natural)
             + self.seq2seq_settings.input_surround.eos
         )
+        # TODO: (elias): need to trim the input here? 
+        if len(input_token_ids) > 1024:
+            # use just the last 1024 tokens
+            input_token_ids = input_token_ids[-1024:]
+
         canonical = (
             " " + datum.canonical
             if self.seq2seq_settings.output_surround.starts_with_space

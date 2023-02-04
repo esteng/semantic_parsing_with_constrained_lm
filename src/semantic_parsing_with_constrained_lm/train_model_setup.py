@@ -19,6 +19,7 @@ from semantic_parsing_with_constrained_lm.lm import Seq2SeqSettings, Surround
 from semantic_parsing_with_constrained_lm.tokenization import (
     ClampTokenizer,
     GPT2ClampTokenizer,
+    BartClampTokenizer,
     T5ClampTokenizer,
 )
 
@@ -56,7 +57,7 @@ class BartModelConfig(ClampModelConfig):
         #         f"Model files not found in {self.model_loc}"
         #     )
         model = BartForConditionalGeneration.from_pretrained(self.model_loc)
-        tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))
+        tokenizer = BartClampTokenizer.from_pretrained(str(self.model_loc))
         seq2seq_settings = Seq2SeqSettings(
             input_surround=Surround(bos=[0], eos=[2], starts_with_space=True),
             output_surround=Surround(bos=[0], eos=[2], starts_with_space=True),

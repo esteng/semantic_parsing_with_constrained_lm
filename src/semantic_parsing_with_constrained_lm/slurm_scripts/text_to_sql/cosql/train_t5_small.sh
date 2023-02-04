@@ -6,5 +6,5 @@
 
 python -m semantic_parsing_with_constrained_lm.finetune.lm_finetune \
     --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_config \
-    --exp-name-pattern 't5-small-lm-adapt_cosql_past_all_db_val_all_0.0001'
+    --exp-name-pattern 't5-small-lm-adapt_cosql_past_all_db_val_all_*'
 

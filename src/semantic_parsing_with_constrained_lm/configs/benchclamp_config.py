@@ -152,7 +152,10 @@ TRAIN_MODEL_CONFIGS: List[ClampModelConfig] = [
         else None,
     ),
     BartModelConfig(
-        model_id="bart-base", model_loc=HUGGINGFACE_MODEL_DIR / "bart-base"
+        model_id="bart-base", model_loc=HUGGINGFACE_MODEL_DIR / "bart-base",
+        # device_map={0: list(range(4)), 1: list(range(4, 12))}
+        # if torch.cuda.device_count() >= 2
+        # else None,
     ),
 ]
 
@@ -167,9 +170,37 @@ BATCH_SIZE_PER_DEVICE_OVERRIDES: Dict[str, int] = {
         ("last_agent", 2),
         ("last_user", 2),
     ]
-    for lr in ["0.0001"]
+    for lr in ["0.0001", "1e-5"]
     for split_id in ["low_0", "low_1", "low_2", "medium_0", "all", "tiny"]
 }
+BATCH_SIZE_PER_DEVICE_OVERRIDES.update(
+    {
+        f"{lm}_{dataset}_{inp}_{split_id}_{lr}": batch_size
+        for lm in ["t5-base-lm-adapt", "bart-base"]
+        for dataset in ["spider"]
+        for inp, batch_size in [
+            ("past_none_db_val", 3),
+            ("past_one_db_val", 3),
+            ("past_all_db_val", 3),
+        ]
+        for lr in ["0.0001", "1e-5"]
+        for split_id in ["low_0", "low_1", "low_2", "medium_0", "all", "tiny"]
+    }
+)
+BATCH_SIZE_PER_DEVICE_OVERRIDES.update(
+    {
+        f"{lm}_{dataset}_{inp}_{split_id}_{lr}": batch_size
+        for lm in ["t5-base-lm-adapt", "bart-base"]
+        for dataset in ["cosql"]
+        for inp, batch_size in [
+            ("past_none_db_val", 3),
+            ("past_one_db_val", 3),
+            ("past_all_db_val", 2),
+        ]
+        for lr in ["0.0001", "1e-5"]
+        for split_id in ["low_0", "low_1", "low_2", "medium_0", "all", "tiny"]
+    }
+)
 
 
 def create_train_exp(
@@ -361,7 +392,6 @@ def create_eval_exp(
                 BenchClampDataset.Spider.value,
                 BenchClampDataset.CoSQL.value,
             ] and problem_type in ["constrained", "unconstrained-beam"]:
-                pdb.set_trace()
                 metrics["test_suite_execution_acc"] = SQLTestSuiteMatch(
                     db_path=str(TEST_SUITE_DATABASE_PATH),
                     test_suite_path=str(TEST_SUITE_PATH),

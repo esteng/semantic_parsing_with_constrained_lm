@@ -88,6 +88,22 @@ class SQLTestSuiteMatch(Metric[Sequence[str], FullDatumSub]):
                         fp_gold.write("\n")
                         fp_pred.write("\n")
 
+        command = [
+                "python3",
+                "evaluation.py",
+                "--gold",
+                gold_file,
+                "--pred",
+                pred_file,
+                "--db",
+                self.db_path,
+                "--table",
+                self.table_file,
+                "--etype",
+                "all",
+            ]
+        command_str = " ".join(command) 
+        print(f"command: {command_str}")
         process = subprocess.run(
             [
                 "python3",
