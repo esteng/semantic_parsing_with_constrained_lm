@@ -367,13 +367,19 @@ class BeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, 
         alive using force_decokde, k-best list"""
         max_steps = self.max_steps_fn(test_datum) if self.max_steps_fn else None
         # TODO (elias) add way to get token probs from beam search
-        results = await beam_search(
-            self.problem_factory.problem,
-            self.problem_factory.initial(test_datum),
-            self.beam_size,
-            event_listener=LoggingEventListener(self.tokenizer, self.beam_size),
-            max_steps=max_steps,
-        )
+        try:
+            results = await beam_search(
+                self.problem_factory.problem,
+                self.problem_factory.initial(test_datum),
+                self.beam_size,
+                event_listener=LoggingEventListener(self.tokenizer, self.beam_size),
+                max_steps=max_steps,
+            )
+        except RuntimeError:
+            # NOTE (elias): adding except to avoid out-of-memory for very long inputs (very rare)
+            print(f"SKIPPING LONG")
+            results = []
+
         return [
             # TODO (elias): add token probs to model result 
             ModelResult(self.problem_factory.decoding_setup.finalize(n.tokens), 

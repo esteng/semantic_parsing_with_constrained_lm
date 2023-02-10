@@ -179,7 +179,7 @@ BATCH_SIZE_PER_DEVICE_OVERRIDES.update(
         for lm in ["t5-base-lm-adapt", "bart-base"]
         for dataset in ["spider"]
         for inp, batch_size in [
-            ("past_none_db_val", 3),
+            ("past_none_db_val", 3), 
             ("past_one_db_val", 3),
             ("past_all_db_val", 3),
         ]
@@ -494,8 +494,8 @@ def create_exps_dict() -> Tuple[
                         model_id=train_model_config.model_id,
                         model_loc=best_model_loc,
                     )
-                    # for constrained in ["constrained", "unconstrained-beam"]:
-                    for constrained in ["unconstrained-beam"]:
+                    for constrained in ["constrained", "unconstrained-beam"]:
+                    # for constrained in ["unconstrained-beam"]:
                         eval_exp_name = (
                             f"{best_model_id}_test_eval_{constrained}_bs_{BEAM_SIZE}"
                         )

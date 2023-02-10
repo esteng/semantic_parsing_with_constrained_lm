@@ -37,18 +37,16 @@ def main():
         )
 
     # CodeT5
-    # skip for now 
-    if False:
-        for model_id, huggingface_model_id in [
-            ("codet5-base", "Salesforce/codet5-base"),
-            ("codet5-base-multi-sum", "Salesforce/codet5-base-multi-sum"),
-        ]:
-            print(f"Downloading {model_id} ...")
-            model = T5ForConditionalGeneration.from_pretrained(huggingface_model_id)
-            tokenizer = RobertaTokenizer.from_pretrained(huggingface_model_id)
-            save_model_and_tokenizer(
-                model, tokenizer, CLAMP_PRETRAINED_MODEL_DIR / model_id
-            )
+    for model_id, huggingface_model_id in [
+        ("codet5-base", "Salesforce/codet5-base"),
+        ("codet5-base-multi-sum", "Salesforce/codet5-base-multi-sum"),
+    ]:
+        print(f"Downloading {model_id} ...")
+        model = T5ForConditionalGeneration.from_pretrained(huggingface_model_id)
+        tokenizer = RobertaTokenizer.from_pretrained(huggingface_model_id)
+        save_model_and_tokenizer(
+            model, tokenizer, CLAMP_PRETRAINED_MODEL_DIR / model_id
+        )
 
     # Bart
     for model_id, huggingface_model_id in [

@@ -141,6 +141,8 @@ def main():
     # tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path, use_fast = True) 
     if "bart" in model_args.model_name_or_path:
         tokenizer = GPT2ClampTokenizer.from_pretrained(model_args.model_name_or_path)
+    elif "codet5" in model_args.model_name_or_path:
+        tokenizer = GPT2ClampTokenizer.from_pretrained(model_args.model_name_or_path)
     else:
         tokenizer  = T5ClampTokenizer.from_pretrained(model_args.model_name_or_path)
 
@@ -165,26 +167,11 @@ def main():
         token_ids = tokenizer.encode(string_to_tokenize)
         return token_ids
 
-    def preprocess_sql(examples):
-        datum_parser = CoSqlUtterance(use_db_val = True,
-                                        past_utterances = "all")
-        # list of utterances per datapoint 
-        for ex in examples: 
-            utts = ex['utterance']
-            if len(utts) == 1:
-                past_utterances = None
-            else:
-                past_utts = utts[:-1]
-                utt = utts[-1]
-            
 
-            datum = BenchClampDatum()
-        # 
 
     # TODO: (elias): ensure that this function remains accurate for sql 
     def preprocess(examples):
         input = [datapoint for datapoint in examples['utterance']]
-        pdb.set_trace() 
         prefix_last_user = [utt for utt in examples['last_user_utterance']]
         prefix_last_agent = [utt for utt in examples['last_agent_utterance']]
 
@@ -221,20 +208,30 @@ def main():
             input_sequence_creator = CoSqlUtterance(use_db_val = True, past_utterances = "none")
         else:
             input_sequence_creator = CoSqlUtterance(use_db_val = True, past_utterances = "all")
+
+        split = Path(data_args.validation_file).stem
         with open(data_args.validation_file) as f:
             data = data_from_textio(f)
 
-        data_for_expt = []
+        dev_dataset = []
         for datum in data:
             input_sequence = input_sequence_creator.create_sequence(datum)
+            # TODO: what about codet5?
             input_sequence = f" {input_sequence}</s>"
             output_sequence = datum.plan
             output_sequence = f" {output_sequence}</s>"
-            print(input_sequence)
-            print(len(input_sequence))
-            print(output_sequence)
-            print(len(output_sequence))
-            pdb.set_trace()
+
+            input_ids = encode_for_encoder(input_sequence)
+            label_ids = encode_for_decoder(output_sequence)
+            dexp = {"input_ids": input_ids,
+                    "labels": label_ids}
+            dev_dataset.append(dexp)
+            
+            #print(input_sequence)
+            #print(len(input_sequence))
+            #print(output_sequence)
+            #print(len(output_sequence))
+            #pdb.set_trace()
     else:
         data_files = {"dev": data_args.validation_file}
         split = Path(data_args.validation_file).stem

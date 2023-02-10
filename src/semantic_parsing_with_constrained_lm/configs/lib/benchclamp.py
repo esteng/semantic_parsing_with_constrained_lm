@@ -39,7 +39,7 @@ TEST_SUITE_DATABASE_PATH = Path("/brtx/601-nvme1/estengel/resources/data/benchcl
 SPIDER_DATABASE_PATH = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/Spider//database/")
 SPIDER_TABLES_FILE = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/Spider/tables.json")
 COSQL_DATABASE_PATH = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/CoSQL/database/")
-COSQL_TABLES_FILE = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/tables.json")
+COSQL_TABLES_FILE = Path("/brtx/601-nvme1/estengel/resources/data/benchclamp/raw/CoSQL/tables.json")
 
 
 def create_partial_parse_builder(
