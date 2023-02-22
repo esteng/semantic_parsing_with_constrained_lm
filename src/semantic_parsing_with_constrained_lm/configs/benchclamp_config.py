@@ -71,8 +71,8 @@ HUGGINGFACE_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingface_m
 TRAINED_MODEL_DIR = Path(os.environ.get("CHECKPOINT_DIR", "trained_models") )
 # LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/601-nvme1/estengel/calflow_calibration/benchclamp/logs/")
 # TODO(Elias): change back once done debugging
-# LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
-LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/ambiguous_parsing/benchclamp/logs/")
+LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+# LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/brtx/602-nvme1/estengel/ambiguous_parsing/benchclamp/logs/")
 # LOG_DIR = Path("/mnt/my_output/logs/") if RUN_ON_AML else Path("/home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs")
 VERSION = "1.0"
 
