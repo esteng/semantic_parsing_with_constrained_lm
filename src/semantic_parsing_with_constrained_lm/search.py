@@ -200,9 +200,12 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
             )
         token_and_logprob_iter: Iterator[Tuple[int, torch.Tensor]]
         if allowed_next is None:
-            indices = torch.arange(next_logprobs.shape[0])
+            # NOTE (elias): this wasn't required before but now is? 
+            indices = torch.arange(next_logprobs.shape[0]).to(next_logprobs.device)
             eligible_logprobs = next_logprobs
         else:
+            # NOTE (elias): this wasn't required before but now is? Error being raised becaause of device mismatch
+            allowed_next = allowed_next.to(next_logprobs.device)
             indices = allowed_next
             eligible_logprobs = next_logprobs[allowed_next]
 
