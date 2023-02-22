@@ -200,9 +200,12 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
             )
         token_and_logprob_iter: Iterator[Tuple[int, torch.Tensor]]
         if allowed_next is None:
-            indices = torch.arange(next_logprobs.shape[0])
+            # NOTE: Elias: why do I have to add this here now (but it worked without this before)? Was  running on CPU?
+            indices = torch.arange(next_logprobs.shape[0]).to(next_logprobs.device)
             eligible_logprobs = next_logprobs
         else:
+            # NOTE: Elias: why do I have to add this here now (but it worked without this before)? Was  running on CPU?
+            allowed_next = allowed_next.to(next_logprobs.device)
             indices = allowed_next
             eligible_logprobs = next_logprobs[allowed_next]
 
@@ -218,13 +221,18 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
                 k=min(self.top_k, eligible_logprobs.shape[0]),
                 sorted=False,
             )
-            token_and_logprob_iter = (
-                (token_id_tensor.item(), logprob)  # type: ignore
-                for token_id_tensor, logprob in zip(
-                    indices[topk_eligible_logprobs.indices],
-                    topk_eligible_logprobs.values,
+            try:
+                token_and_logprob_iter = (
+                    (token_id_tensor.item(), logprob)  # type: ignore
+                    for token_id_tensor, logprob in zip(
+                        indices[topk_eligible_logprobs.indices],
+                        topk_eligible_logprobs.values,
+                    )
                 )
-            )
+            except RuntimeError:
+                print(f"indices.device: {indices.device}")
+                print(f"topk_eligible_logprobs.indices.device: {topk_eligible_logprobs.indices.device}")
+                pdb.set_trace()
 
         for token, logprob in token_and_logprob_iter:
             if token in self.eos:
