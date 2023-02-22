@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 #SBATCH -o /home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs/train_t5_small.out
-#SBATCH -p brtx6
+#SBATCH -p brtx6,brtx6-10
 #SBATCH --gpus=1
 
 python -m semantic_parsing_with_constrained_lm.finetune.lm_finetune \

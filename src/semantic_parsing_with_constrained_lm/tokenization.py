@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Optional
 
 import sentencepiece.sentencepiece_model_pb2 as sentencepiece_model
 from cached_property import cached_property
-from transformers import GPT2Tokenizer, T5Tokenizer, BartTokenizer
+from transformers import GPT2Tokenizer, T5Tokenizer, BartTokenizer, RobertaTokenizer
 
 if TYPE_CHECKING:
     # pylint: disable=reimported
@@ -147,6 +147,15 @@ class BartClampTokenizer(GPT2ClampTokenizer):
             tokenizer=BartTokenizer.from_pretrained(tokenizer_loc)
         )
 
+class RobertaClampTokenizer(GPT2ClampTokenizer): 
+    def __init__(self, tokenizer: RobertaTokenizer):
+        super().__init__(tokenizer=tokenizer)
+
+    @classmethod
+    def from_pretrained(cls, tokenizer_loc: str) -> "RobertaClampTokenizer":
+        return RobertaClampTokenizer(
+            tokenizer=RobertaTokenizer.from_pretrained(tokenizer_loc)
+        )
 class T5ClampTokenizer(ClampTokenizer):
     def __init__(
         self, tokenizer: T5Tokenizer, output_sequences: Optional[Iterable[str]] = None

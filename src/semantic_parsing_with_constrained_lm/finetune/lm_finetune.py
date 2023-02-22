@@ -21,6 +21,7 @@ from torch.utils.data.dataset import Dataset
 from transformers import PreTrainedModel, Trainer, TrainingArguments
 
 import semantic_parsing_with_constrained_lm
+from semantic_parsing_with_constrained_lm.debug_codet5 import DebugTrainer
 from semantic_parsing_with_constrained_lm.util import logger
 from semantic_parsing_with_constrained_lm.datum import FullDatum, BenchClampDatum
 from semantic_parsing_with_constrained_lm.lm import Seq2SeqSettings
@@ -271,7 +272,7 @@ def run(
         exp.log_dir = log_dir / exp_name
 
     print_gpu_stats("Before Training GPU State")
-    trainer = Trainer(
+    trainer = DebugTrainer(
         model=exp.model,
         args=exp.training_args,
         train_dataset=train_dataset,

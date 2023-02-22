@@ -166,6 +166,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             ("no_context", IdentitySequenceCreator(), BENCHCLAMP_SPLIT_NAMES),
             ("last_agent", LastAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
             ("last_user", LastUserAgentUtterance(), BENCHCLAMP_SPLIT_NAMES),
+            ("last_user", LastUserAgentUtterance(), ['7794']), # add the special split for calflow to compare to Spider
         ]
         for split_name in split_names
     ]

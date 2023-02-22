@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 #SBATCH -o /home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs/spider_test_logits.out
-#SBATCH -p brtx6
+#SBATCH --partition=brtx6-10,brtx6
 #SBATCH --gpus=1
 
 # CHECKPOINT_DIR='/srv/local1/estengel/calflow_calibration/benchclamp/lispress_to_text_context/1.0/t5-base-lm-adapt_calflow_last_user_all_0.0001/checkpoint-10000'

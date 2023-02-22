@@ -278,8 +278,8 @@ def main():
                 with torch.no_grad():
                     outputs = trainer.model(**inputs)
                     logits = outputs.logits
-                    logits = torch.exp(torch.log_softmax(logits, dim=-1))
-                    logits = logits.detach().cpu().numpy()
+                    torch_logits = torch.exp(torch.log_softmax(logits, dim=-1))
+                    logits = torch_logits.detach().cpu().numpy()
                     # exp_logits = np.exp(logits)
                     # logits = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
                     logits_top_k_idxs = np.argsort(logits, axis=-1)[:, :, -data_args.top_k:]
@@ -293,7 +293,7 @@ def main():
                     unsqueezed_labels = inputs['labels'].unsqueeze(-1)
                     labels_to_gather = unsqueezed_labels.clone()
                     labels_to_gather[unsqueezed_labels == -100] = 0
-                    logit_at_label = outputs.logits.gather(2, labels_to_gather)
+                    logit_at_label = torch_logits.gather(2, labels_to_gather)
                     logit_at_label[unsqueezed_labels == -100] = -100
                     
                     logit_at_label = logit_at_label.squeeze(-1)

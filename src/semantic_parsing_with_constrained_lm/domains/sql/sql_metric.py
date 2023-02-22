@@ -28,6 +28,7 @@ class SQLTestSuiteMatch(Metric[Sequence[str], FullDatumSub]):
     predictions_map: Dict[Tuple[str, int], str] = dataclasses.field(init=False)
     gold_map: Dict[Tuple[str, int], str] = dataclasses.field(init=False)
     dialogue_to_turn_indices_map: Dict[str, List[int]] = dataclasses.field(init=False)
+    do_print: bool = True
 
     def __post_init__(self):
         self.reset()
@@ -103,7 +104,8 @@ class SQLTestSuiteMatch(Metric[Sequence[str], FullDatumSub]):
                 "all",
             ]
         command_str = " ".join(command) 
-        print(f"command: {command_str}")
+        if self.do_print:
+            print(f"command: {command_str}")
         process = subprocess.run(
             [
                 "python3",
@@ -124,15 +126,17 @@ class SQLTestSuiteMatch(Metric[Sequence[str], FullDatumSub]):
             text=True,
             check=True,
         )
-        print("stdout:", process.stdout)
-        print("stderr:", process.stderr)
+        if self.do_print:
+            print("stdout:", process.stdout)
+            print("stderr:", process.stderr)
         execution_acc = 0.0
         for line in process.stdout.split("\n"):
             if line.startswith("execution"):
                 execution_acc = float(line.split()[5].strip())
                 break
         result = {"execution_acc": execution_acc}
-        print(result)
+        if self.do_print:
+            print(result)
         return result
 
     def reset(self) -> None:
