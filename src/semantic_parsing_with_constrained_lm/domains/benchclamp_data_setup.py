@@ -90,8 +90,11 @@ class BenchClampDatasetConfig(ClampDataConfig):
         domain_str = self.domain + "/" if self.domain is not None else ""
         if "low" in self.split_name:
             dev_data_suffix = "low"
-        elif "all" in self.split_name:
+        elif "all" in self.split_name and "converted" not in self.split_name:
             dev_data_suffix = "all" 
+        elif "all_converted" in self.split_name:
+            dev_data_suffix = "all_converted"
+            self.eval_on_full_test = False
         elif "tiny" in self.split_name:
             dev_data_suffix = "tiny" 
         else:
@@ -149,7 +152,7 @@ OVERNIGHT_DOMAINS = [
 MTOP_LANGUAGES = ["de", "en", "es", "fr", "hi", "th"]
 
 BENCHCLAMP_SPLIT_NAMES: List[str] = (
-    [f"low_{i}" for i in range(3)] + [f"medium_{i}" for i in range(1)] + ["all"] + ["tiny"]
+    [f"low_{i}" for i in range(3)] + [f"medium_{i}" for i in range(1)] + ["all"] + ["tiny"] + ["all_converted"]
 )
 
 BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
@@ -235,7 +238,7 @@ BENCHCLAMP_DATA_CONFIGS: List[ClampDataConfig] = (
             ),
             eval_on_full_test=True,
         )
-        for split_name in BENCHCLAMP_SPLIT_NAMES
+        for split_name in BENCHCLAMP_SPLIT_NAMES 
     ]
     + [
         BenchClampDatasetConfig(
