@@ -270,7 +270,6 @@ class FewShotLMDecodingSetup(
 
         # TODO: Figure out how to generalize this for when some tokens are already present
         if not packed_node.tokens:
-            pdb.set_trace()
             allowed_tokens, can_end = initial_partial_parse.allowed_next(
                 torch.argsort(logprobs[-1], descending=True)
             )

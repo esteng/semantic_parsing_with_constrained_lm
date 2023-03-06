@@ -46,7 +46,7 @@ from semantic_parsing_with_constrained_lm.domains.lispress_v2.lispress_exp impor
 from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, OvernightPieces
 from semantic_parsing_with_constrained_lm.eval import Metric, TopKExactMatch
 from semantic_parsing_with_constrained_lm.fit_max_steps import compute_and_print_fit
-from semantic_parsing_with_constrained_lm.lm_gpt2 import Seq2SeqGPT2
+from semantic_parsing_with_constrained_lm.lm_gpt2 import Seq2SeqGPT2, IncrementalGPT2
 from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE
 from semantic_parsing_with_constrained_lm.run_exp import Experiment
 from semantic_parsing_with_constrained_lm.finetune.lm_finetune import TrainExperiment
@@ -61,8 +61,12 @@ from semantic_parsing_with_constrained_lm.train_model_setup import (
 )
 from semantic_parsing_with_constrained_lm.configs.benchclamp_config import HUGGINGFACE_MODEL_DIR
 
-LOG_DIR = Path("logs/")
-VERSION = "1.10"
+# LOG_DIR = Path("logs/")
+# VERSION = "1.10"
+
+# TODO(Elias): change back once done debugging
+LOG_DIR = Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+VERSION = "1.0"
 
 BEAM_SIZE = 5
 # SEARCH_MAX_STEPS = 500
@@ -79,6 +83,13 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
     CodeGenModelConfig(
         model_id="codegen-2B",
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-2B",
+        device_map={0: list(range(4)), 1: list(range(4, 12))}
+        if torch.cuda.device_count() >= 2
+        else None,
+    ),
+    CodeGenModelConfig(
+        model_id="codegen-6B",
+        model_loc=HUGGINGFACE_MODEL_DIR / "codegen-6B",
         device_map={0: list(range(4)), 1: list(range(4, 12))}
         if torch.cuda.device_count() >= 2
         else None,
@@ -104,7 +115,7 @@ def create_eval_exp(
     train_data, dev_data, test_data = data_config.setup_data()
 
 
-    lm = Seq2SeqGPT2(
+    lm = IncrementalGPT2(
         pretrained_model_dir=str(model_config.model_loc),
         model=model,
         clamp_tokenizer=tokenizer,
@@ -198,7 +209,6 @@ def create_eval_exp(
                 1000,
             )
 
-
             parser = make_semantic_parser(
                 train_data=train_data,  # type: ignore
                 lm=lm,  # type: ignore
@@ -258,7 +268,7 @@ def create_exps_dict() -> Tuple[
         prompt_order,
     ) in itertools.product(
         BENCHCLAMP_DATA_CONFIGS,
-        ("codegen-350M", "codegen-2B"),
+        ("codegen-350M", "codegen-2B", "codegen-6B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,

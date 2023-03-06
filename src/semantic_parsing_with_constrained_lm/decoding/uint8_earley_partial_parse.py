@@ -153,6 +153,7 @@ class UInt8EarleyPartialParse(PartialParse):
         can_end = self.grammar_node.chart.was_found(
             self.grammar_node.chart.grammar.root, self.start_pos, self.grammar_node.pos
         )
+        # import pdb; pdb.set_trace()
         return torch.tensor(tokens_list, dtype=torch.long), can_end
 
     def append(self, token: int) -> "UInt8EarleyPartialParse":

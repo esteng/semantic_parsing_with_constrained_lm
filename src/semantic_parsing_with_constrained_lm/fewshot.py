@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-
+import pdb 
 import asyncio
 import dataclasses
 import itertools
@@ -139,8 +139,9 @@ class PromptBuilder(Generic[TrainDatum, TestDatum]):
         if test_datum is not None:
             result += [
                 build_one_datum(test_datum, self.input_field_order)
-                + self.field_to_adornment[self.problem_spec.output_field].prefix
+                + self.field_to_adornment[self.problem_spec.output_field].prefix 
             ]
+            # pdb.set_trace()
         return self.separator.join(result)
 
     @property
