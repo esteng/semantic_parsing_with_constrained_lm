@@ -35,7 +35,7 @@ from semantic_parsing_with_constrained_lm.domains.lispress_v2.lispress_exp impor
 from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, OvernightPieces
 from semantic_parsing_with_constrained_lm.eval import Metric, TopKExactMatch
 from semantic_parsing_with_constrained_lm.fit_max_steps import compute_and_print_fit
-from semantic_parsing_with_constrained_lm.lm_openai_gpt3 import IncrementalOpenAIGPT3
+from semantic_parsing_with_constrained_lm.lm_gpt_neo_proxy import IncrementalGPTNeo
 from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE
 from semantic_parsing_with_constrained_lm.run_exp import Experiment
 from semantic_parsing_with_constrained_lm.finetune.lm_finetune import TrainExperiment
@@ -49,14 +49,14 @@ SEARCH_MAX_STEPS = 50
 
 
 def create_eval_exp(
-    open_ai_model_name: str,
+    model_name: str,
     data_config: ClampDataConfig,
     problem_type: Literal["constrained", "unconstrained-beam", "unconstrained-greedy"],
     is_dev: bool,
     prompt_order: PromptOrder,
 ) -> Experiment:
     train_data, dev_data, test_data = data_config.setup_data()
-    lm = IncrementalOpenAIGPT3(engine=open_ai_model_name)
+    lm = IncrementalGPTNeo(model=model_name)
     if problem_type == "constrained":
         constrained = True
         beam_size = BEAM_SIZE
@@ -196,7 +196,7 @@ def create_exps_dict() -> Tuple[
         prompt_order,
     ) in itertools.product(
         BENCHCLAMP_DATA_CONFIGS,
-        ("text-davinci-001", "code-davinci-001"),
+        ("codegen-350M-mono", "none"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,

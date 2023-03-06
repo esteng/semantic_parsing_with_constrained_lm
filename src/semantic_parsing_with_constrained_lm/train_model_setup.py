@@ -11,6 +11,7 @@ import torch
 from transformers import (
     BartForConditionalGeneration,
     GPT2LMHeadModel,
+    CodeGenForCausalLM,
     PreTrainedModel,
     T5ForConditionalGeneration,
 )
@@ -113,6 +114,27 @@ class GPT2ModelConfig(ClampModelConfig):
                 f"Model files not found in {self.model_loc}"
             )
         model = GPT2LMHeadModel.from_pretrained(self.model_loc)
+        tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))
+        seq2seq_settings = Seq2SeqSettings(
+            input_surround=Surround(
+                bos=[20490, 25], eos=[198], starts_with_space=True
+            ),  # bos: "Human:", eos: "\n"
+            output_surround=Surround(
+                bos=[34556, 25], eos=[198], starts_with_space=True
+            ),  # bos: "Computer:", eos: "\n"
+            decoder_start_token_id=None,
+        )
+        self.maybe_parallelize(model)
+        model.eval()
+        return model, tokenizer, seq2seq_settings
+
+class CodeGenModelConfig(ClampModelConfig):
+    def setup_model(self) -> Tuple[PreTrainedModel, ClampTokenizer, Seq2SeqSettings]:
+        if not self.model_loc.exists():
+            raise TrainedModelNotFoundError(
+                f"Model files not found in {self.model_loc}"
+            )
+        model = CodeGenForCausalLM.from_pretrained(self.model_loc)
         tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))
         seq2seq_settings = Seq2SeqSettings(
             input_surround=Surround(

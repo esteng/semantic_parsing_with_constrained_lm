@@ -10,7 +10,8 @@ import functools
 import itertools
 import sys
 from pathlib import Path
-from typing import Any, Callable, Dict, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Sequence, Tuple, Union, List
+import torch 
 
 from typing_extensions import Literal
 
@@ -20,6 +21,16 @@ from semantic_parsing_with_constrained_lm.configs.lib.common import (
     PromptOrder,
     make_semantic_parser,
 )
+
+from semantic_parsing_with_constrained_lm.domains.sql.sql_metric import SQLTestSuiteMatch
+from semantic_parsing_with_constrained_lm.configs.lib.benchclamp import (
+    COSQL_TABLES_FILE,
+    SPIDER_TABLES_FILE,
+    TEST_SUITE_DATABASE_PATH,
+    TEST_SUITE_PATH,
+    create_partial_parse_builder,
+)
+
 from semantic_parsing_with_constrained_lm.datum import Datum, FullDatum
 from semantic_parsing_with_constrained_lm.decoding.partial_parse import (
     PartialParse,
@@ -35,10 +46,20 @@ from semantic_parsing_with_constrained_lm.domains.lispress_v2.lispress_exp impor
 from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, OvernightPieces
 from semantic_parsing_with_constrained_lm.eval import Metric, TopKExactMatch
 from semantic_parsing_with_constrained_lm.fit_max_steps import compute_and_print_fit
-from semantic_parsing_with_constrained_lm.lm_openai_gpt3 import IncrementalOpenAIGPT3
+from semantic_parsing_with_constrained_lm.lm_gpt2 import Seq2SeqGPT2
 from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE
 from semantic_parsing_with_constrained_lm.run_exp import Experiment
 from semantic_parsing_with_constrained_lm.finetune.lm_finetune import TrainExperiment
+
+from semantic_parsing_with_constrained_lm.train_model_setup import (
+    BartModelConfig,
+    ClampModelConfig,
+    CodeGenModelConfig,
+    CodeT5ModelConfig,
+    GPT2ModelConfig,
+    T5ModelConfig,
+)
+from semantic_parsing_with_constrained_lm.configs.benchclamp_config import HUGGINGFACE_MODEL_DIR
 
 LOG_DIR = Path("logs/")
 VERSION = "1.10"
@@ -47,16 +68,48 @@ BEAM_SIZE = 5
 # SEARCH_MAX_STEPS = 500
 SEARCH_MAX_STEPS = 50
 
+EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
+    CodeGenModelConfig(
+        model_id="codegen-350M",
+        model_loc=HUGGINGFACE_MODEL_DIR / "codegen-350M",
+        device_map={0: list(range(4)), 1: list(range(4, 12))}
+        if torch.cuda.device_count() >= 2
+        else None,
+    ),
+    CodeGenModelConfig(
+        model_id="codegen-2B",
+        model_loc=HUGGINGFACE_MODEL_DIR / "codegen-2B",
+        device_map={0: list(range(4)), 1: list(range(4, 12))}
+        if torch.cuda.device_count() >= 2
+        else None,
+    ),
+    
+    ]
+
 
 def create_eval_exp(
-    open_ai_model_name: str,
+    exp_name: str,
+    model_config: ClampModelConfig,
     data_config: ClampDataConfig,
     problem_type: Literal["constrained", "unconstrained-beam", "unconstrained-greedy"],
     is_dev: bool,
     prompt_order: PromptOrder,
 ) -> Experiment:
+
     train_data, dev_data, test_data = data_config.setup_data()
-    lm = IncrementalOpenAIGPT3(engine=open_ai_model_name)
+    # lm = IncrementalOpenAIGPT3(engine=open_ai_model_name)
+
+    model, tokenizer, _ = model_config.setup_model()
+    data_config.tokenizer = tokenizer
+    train_data, dev_data, test_data = data_config.setup_data()
+
+
+    lm = Seq2SeqGPT2(
+        pretrained_model_dir=str(model_config.model_loc),
+        model=model,
+        clamp_tokenizer=tokenizer,
+    )
+
     if problem_type == "constrained":
         constrained = True
         beam_size = BEAM_SIZE
@@ -70,10 +123,6 @@ def create_eval_exp(
         raise ValueError(f"{problem_type} not allowed")
 
     eval_data = dev_data if is_dev else test_data
-
-    # truncate 
-    eval_data = eval_data[0:10]
-    test_data = test_data[0:10]
 
     if isinstance(data_config, BenchClampDatasetConfig):
         if data_config.dataset_name == BenchClampDataset.Overnight.value:
@@ -107,13 +156,11 @@ def create_eval_exp(
             parser = make_semantic_parser(
                 train_data,
                 lm,  # type: ignore
-                True,
+                False,
                 max_steps,
                 beam_size,
                 partial_parse_builder,
                 lambda _datum: max_steps,
-                similarity_method=BM25Indexer(),
-                prompt_order=prompt_order,
             )
 
             return Experiment(
@@ -131,8 +178,8 @@ def create_eval_exp(
             # Everything other than Overnight in BenchClamp
             train_length_pairs = []
             for datum in train_data:
-                num_input_tokens = len(lm.tokenizer.tokenize(datum.natural))
-                num_output_tokens = len(lm.tokenizer.tokenize(datum.canonical)) + 1
+                num_input_tokens = len(tokenizer.tokenize(datum.natural))
+                num_output_tokens = len(tokenizer.tokenize(datum.canonical)) + 1
                 train_length_pairs.append((num_input_tokens, num_output_tokens))
 
             print("Computing max steps regression model parameters ...")
@@ -140,29 +187,30 @@ def create_eval_exp(
                 train_length_pairs, 10, 1
             )
             print("Done")
-
             partial_parse_builder = create_partial_parse_builder(
-                constrained, data_config, lm.tokenizer
+                constrained, data_config, tokenizer
             )
             max_steps_fn = lambda _datum: min(
                 int(
-                    len(lm.tokenizer.tokenize(_datum.natural)) * max_steps_slope
+                    len(tokenizer.tokenize(_datum.natural)) * max_steps_slope
                     + max_steps_intercept
                 ),
                 1000,
             )
+
+
             parser = make_semantic_parser(
                 train_data=train_data,  # type: ignore
                 lm=lm,  # type: ignore
-                use_gpt3=True,
+                use_gpt3=False,
                 global_max_steps=SEARCH_MAX_STEPS,
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,
                 max_steps_fn=max_steps_fn,
                 similarity_method=BM25Indexer(),
                 prompt_order=prompt_order,
-                num_examples_per_prompt=5, # NOTE (elias): reducing to lower token cost
             )
+
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
                 "exact_match": TopKExactMatch(beam_size)
             }
@@ -171,7 +219,20 @@ def create_eval_exp(
                 BenchClampDataset.TreeDST.value,
             ]:
                 metrics["lispress_match"] = TopKLispressMatch(beam_size)
+            elif data_config.dataset_name in [
+                BenchClampDataset.Spider.value,
+                BenchClampDataset.CoSQL.value,
+            ] and problem_type in ["constrained", "unconstrained-beam"]:
+                metrics["test_suite_execution_acc"] = SQLTestSuiteMatch(
+                    db_path=str(TEST_SUITE_DATABASE_PATH),
+                    test_suite_path=str(TEST_SUITE_PATH),
+                    table_file=str(SPIDER_TABLES_FILE)
+                    if data_config.dataset_name == BenchClampDataset.Spider.value
+                    else str(COSQL_TABLES_FILE),
+                    log_dir=str(LOG_DIR / VERSION / exp_name),
+                )
 
+            print("Returned experiment")
             return Experiment(
                 model=parser,
                 metrics=metrics,
@@ -181,6 +242,7 @@ def create_eval_exp(
             )
 
     raise ValueError("Could not create eval experiment with inputs")
+
 
 
 def create_exps_dict() -> Tuple[
@@ -196,7 +258,7 @@ def create_exps_dict() -> Tuple[
         prompt_order,
     ) in itertools.product(
         BENCHCLAMP_DATA_CONFIGS,
-        ("text-davinci-001", "code-davinci-001"),
+        ("codegen-350M", "codegen-2B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,
@@ -206,15 +268,21 @@ def create_exps_dict() -> Tuple[
             f"{open_ai_model}_{data_config.data_id}_{prompt_order.value}_{dev_or_test}_"
             f"eval_{constrained}_bs_{BEAM_SIZE}"
         )
+
+        # get the right config 
+        eval_model_config = [x for x in EVAL_MODEL_CONFIGS if x.model_id == open_ai_model][0]
+
         eval_exps_dict[eval_exp_name] = functools.partial(
             create_eval_exp,
             open_ai_model,
+            eval_model_config,
             data_config,
             constrained,  # type: ignore
             is_dev=is_dev,
             prompt_order=prompt_order,
         )
 
+    # pdb.set_trace()
     return train_exps_dict, eval_exps_dict
 
 

@@ -260,3 +260,4 @@ class Seq2SeqGPT2(Seq2SeqModel[GPT2State]):
 
     async def next_logprobs(self, hidden_state: GPT2State) -> torch.Tensor:
         return hidden_state.last_logprobs
+
