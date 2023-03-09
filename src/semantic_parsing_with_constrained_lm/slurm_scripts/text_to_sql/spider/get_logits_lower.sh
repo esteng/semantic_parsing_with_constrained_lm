@@ -8,7 +8,7 @@
 # VALIDATION_FILE /brtx/601-nvme1/estengel/resources/data/benchclamp/processed/CalFlowV2/dev_medium.jsonl \
 
 #CHECKPOINT_DIR="/brtx/604-nvme2/estengel/calflow_calibration/benchclamp/1.0/t5-small-lm-adapt_spider_past_none_db_val_all_0.0001/checkpoint-10000/"
-VALIDATION_FILE="/brtx/601-nvme1/estengel/resources/data/benchclamp/processed/Spider/test_all.jsonl" 
+VALIDATION_FILE="/brtx/601-nvme1/estengel/resources/data/benchclamp/processed/Spider/test_all_lower.jsonl" 
 
 mkdir -p ${BEST_CHECKPOINT}/outputs
 

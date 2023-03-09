@@ -83,15 +83,15 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
     CodeGenModelConfig(
         model_id="codegen-2B",
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-2B",
-        device_map={0: list(range(4)), 1: list(range(4, 12))}
+        device_map={0: list(range(15)), 1: list(range(15, 32))}
         if torch.cuda.device_count() >= 2
         else None,
     ),
     CodeGenModelConfig(
         model_id="codegen-6B",
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-6B",
-        device_map={0: list(range(4)), 1: list(range(4, 12))}
-        if torch.cuda.device_count() >= 2
+        device_map={0: list(range(11)), 1: list(range(11, 22)), 2: list(range(22, 33))}
+        if torch.cuda.device_count() >= 3
         else None,
     ),
     
@@ -219,6 +219,7 @@ def create_eval_exp(
                 max_steps_fn=max_steps_fn,
                 similarity_method=BM25Indexer(),
                 prompt_order=prompt_order,
+                num_examples_per_prompt=5,
             )
 
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
@@ -292,7 +293,6 @@ def create_exps_dict() -> Tuple[
             prompt_order=prompt_order,
         )
 
-    # pdb.set_trace()
     return train_exps_dict, eval_exps_dict
 
 

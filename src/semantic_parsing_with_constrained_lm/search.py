@@ -233,7 +233,6 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
             if token in self.eos:
                 continue
             new_unnorm_cost = unnormalized_cost - logprob.item()
-            # TODO (Elias): add logprobs to node to log later on 
 
             result.append(
                 FullSearchNode(

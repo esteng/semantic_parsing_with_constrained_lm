@@ -24,6 +24,7 @@ from semantic_parsing_with_constrained_lm.tokenization import (
     T5ClampTokenizer,
 )
 
+from semantic_parsing_with_constrained_lm.modeling_codegen import MyCodeGenForCausalLM
 
 class TrainedModelNotFoundError(FileNotFoundError):
     pass
@@ -40,14 +41,18 @@ class ClampModelConfig(abc.ABC):
         pass
 
     def maybe_parallelize(self, model: PreTrainedModel) -> None:
+        print(f"TORCH IS AVAILABLE: {torch.cuda.is_available()}")
         if torch.cuda.is_available():
             if self.device_map is not None:
+                print(f"PARALLELIZE")
                 print(f"Parallelizing model with {self.device_map}")
                 model.parallelize(self.device_map)
             else:
+                print("TO GPU 0")
                 print("Entire model to GPU 0")
                 model.to(torch.device("cuda:0"))
         else:
+            print("TO CPU")
             model.to(torch.device("cpu"))
 
 
@@ -134,7 +139,11 @@ class CodeGenModelConfig(ClampModelConfig):
             raise TrainedModelNotFoundError(
                 f"Model files not found in {self.model_loc}"
             )
-        model = CodeGenForCausalLM.from_pretrained(self.model_loc)
+        model = MyCodeGenForCausalLM.from_pretrained(self.model_loc)
+        # use mixed precision 
+        if self.model_loc == "codegen-6B":
+            model.half()
+
         tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))
         seq2seq_settings = Seq2SeqSettings(
             input_surround=Surround(

@@ -202,6 +202,7 @@ class EarleyChart(Generic[Terminal, RuleResult]):
         start to the end position, as sought by the `seek` method?  This can be used
         to answer the recognition question, though not the parsing question.
         """
+        # print("was_found", nonterm, start_pos, end_pos)
         items = self.completed_items(nonterm, start_pos, end_pos)
         return next(items, None) is not None
 

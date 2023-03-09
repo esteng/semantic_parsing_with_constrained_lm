@@ -273,6 +273,7 @@ class FewShotLMDecodingSetup(
             allowed_tokens, can_end = initial_partial_parse.allowed_next(
                 torch.argsort(logprobs[-1], descending=True)
             )
+            # pdb.set_trace()
             self.tokenizer_quirks.check_initial_allowed_tokens(
                 set(allowed_tokens.tolist()) if allowed_tokens is not None else None,
                 can_end,
@@ -367,18 +368,18 @@ class BeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, 
         alive using force_decokde, k-best list"""
         max_steps = self.max_steps_fn(test_datum) if self.max_steps_fn else None
         # TODO (elias) add way to get token probs from beam search
-        try:
-            results = await beam_search(
-                self.problem_factory.problem,
-                self.problem_factory.initial(test_datum),
-                self.beam_size,
-                event_listener=LoggingEventListener(self.tokenizer, self.beam_size),
-                max_steps=max_steps,
-            )
-        except RuntimeError:
-            # NOTE (elias): adding except to avoid out-of-memory for very long inputs (very rare)
-            print(f"SKIPPING LONG")
-            results = []
+        # try:
+        results = await beam_search(
+            self.problem_factory.problem,
+            self.problem_factory.initial(test_datum),
+            self.beam_size,
+            event_listener=LoggingEventListener(self.tokenizer, self.beam_size),
+            max_steps=max_steps,
+        )
+        # except RuntimeError:
+        #     # NOTE (elias): adding except to avoid out-of-memory for very long inputs (very rare)
+        #     print(f"SKIPPING LONG")
+        #     results = []
 
         return [
             # TODO (elias): add token probs to model result 
