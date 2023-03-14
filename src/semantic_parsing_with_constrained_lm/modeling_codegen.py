@@ -15,6 +15,7 @@
 """ PyTorch CodeGen model."""
 
 from typing import Optional, Tuple, Union
+import pdb 
 
 import torch
 import torch.utils.checkpoint
@@ -458,10 +459,10 @@ class MyCodeGenModel(MyCodeGenPreTrainedModel):
         for k, v in self.device_map.items():
             for block in v:
                 cuda_device = "cuda:" + str(k)
+                print(f"setting block {block} to {cuda_device}")
                 self.h[block] = self.h[block].to(cuda_device)
         # ln_f to last
         self.ln_f = self.ln_f.to(self.last_device)
-
 
     def deparallelize(self):
         self.model_parallel = False
@@ -619,6 +620,7 @@ class MyCodeGenModel(MyCodeGenPreTrainedModel):
                     head_mask[i],
                 )
             else:
+                # try:
                 outputs = block(
                     hidden_states,
                     layer_past=layer_past,
@@ -627,6 +629,11 @@ class MyCodeGenModel(MyCodeGenPreTrainedModel):
                     use_cache=use_cache,
                     output_attentions=output_attentions,
                 )
+                # except RuntimeError:
+                #     pdb.set_trace()
+                #     print(f"hidden_states: {hidden_states.device}")
+                #     print(f"block.ln_1: {block.ln_1.device}")
+                    # print(f"layer_past: {layer_past[0].device}")
 
             hidden_states = outputs[0]
             if use_cache is True:
