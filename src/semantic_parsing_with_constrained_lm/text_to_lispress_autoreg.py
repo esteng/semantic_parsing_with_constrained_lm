@@ -110,6 +110,15 @@ async def main():
         model.parallelize(device_map)
         do_parallel = True
 
+    elif Path(model_args.model_name_or_path).stem == "codegen-16B":
+        device_map={0: list(range(9)), 
+                    1: list(range(9, 17)), 
+                    2: list(range(17, 26)), 
+                    3: list(range(26, 34))}
+        model.half()
+        model.parallelize(device_map)
+        do_parallel = True
+
     else:
         device = torch.device("cuda:0")
         model.to(device)

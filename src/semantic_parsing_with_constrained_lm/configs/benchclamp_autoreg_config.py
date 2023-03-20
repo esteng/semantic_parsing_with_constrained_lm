@@ -85,6 +85,20 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-2B",
         device_map={0: list(range(15)), 1: list(range(15, 32))}
         if torch.cuda.device_count() >= 2
+        else {0: list(range(8)),
+        1: list(range(8,16)),
+        2: list(range(16,24)),
+        3: list(range(24,32))}
+        if torch.cuda.device_count() == 4
+        else {0: list(range(4)),
+        1: list(range(4,8)),
+        2: list(range(8,12)),
+        3: list(range(12,16)),
+        4: list(range(16,20)),
+        5: list(range(20,24)),
+        6: list(range(24,28)),
+        7: list(range(28,32))}
+        if torch.cuda.device_count() == 8
         else None,
     ),
     CodeGenModelConfig(
@@ -94,7 +108,13 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         if torch.cuda.device_count() >= 3
         else None,
     ),
-    
+    CodeGenModelConfig(
+        model_id="codegen-16B",
+        model_loc=HUGGINGFACE_MODEL_DIR / "codegen-16B",
+        device_map={0: list(range(9)), 1: list(range(9, 17)), 2: list(range(17, 26)), 3: list(range(26, 34))}
+        if torch.cuda.device_count() == 4
+        else None,
+    ),
     ]
 
 
@@ -269,7 +289,7 @@ def create_exps_dict() -> Tuple[
         prompt_order,
     ) in itertools.product(
         BENCHCLAMP_DATA_CONFIGS,
-        ("codegen-350M", "codegen-2B", "codegen-6B"),
+        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,
@@ -282,7 +302,6 @@ def create_exps_dict() -> Tuple[
 
         # get the right config 
         eval_model_config = [x for x in EVAL_MODEL_CONFIGS if x.model_id == open_ai_model][0]
-
         eval_exps_dict[eval_exp_name] = functools.partial(
             create_eval_exp,
             open_ai_model,

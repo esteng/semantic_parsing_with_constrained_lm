@@ -141,7 +141,7 @@ class CodeGenModelConfig(ClampModelConfig):
             )
         model = MyCodeGenForCausalLM.from_pretrained(self.model_loc)
         # use mixed precision 
-        if self.model_loc == "codegen-6B":
+        if self.model_loc in ["codegen-2B", "codegen-6B", "codegen-16B"]:
             model.half()
 
         tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))

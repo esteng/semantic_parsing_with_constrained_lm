@@ -1,16 +1,42 @@
 import json
 import jsons 
+import pdb 
 import sys
 import os 
 import pathlib
 import argparse
 from collections import defaultdict
+from typing import Optional
 
 from semantic_parsing_with_constrained_lm.configs.benchclamp_config import TEST_SUITE_PATH
 from semantic_parsing_with_constrained_lm.domains.sql.sql_datum import SqlDatum
+from semantic_parsing_with_constrained_lm.datum import FullDatum
 sys.path.insert(0, str(TEST_SUITE_PATH)) 
 from evaluation import Evaluator
 from process_sql import get_schema, Schema, get_sql
+
+class ConvertDatum(SqlDatum):
+    """
+    class to convert saved BenchClampDatum to FullDatum for retriever
+    """
+    def __init__(self,
+                dialogue_id: Optional[str],
+                turn_part_index: Optional[int],
+                utterance: str,
+                plan: str,
+                last_agent_utterance: Optional[str] = None,
+                last_user_utterance: Optional[str] = None,
+                last_plan: Optional[str] = None,
+                schema_name: Optional[str] = None,
+                db_schema_without_val: Optional[str] = None,
+                db_schema_with_val: Optional[str] = None,
+                ): 
+        super().__init__(dialogue_id=dialogue_id, 
+                         turn_part_index=turn_part_index, 
+                         agent_context=None, 
+                         natural=utterance,
+                         canonical=plan,
+                         schema_name=schema_name)
 
 def build_schema_map(targets):
     schema_map = {} 
@@ -23,19 +49,19 @@ def main(args):
     path = args.path_to_pred
     target_path = args.path_to_gold 
 
+    with open(target_path) as f1:
+        targets =  [jsons.loads(line.strip(), cls=ConvertDatum) for line in f1]
+
+    schema_map = build_schema_map(targets)
+
     with open(path) as f1:
         lines = [json.loads(x) for x in f1]
-
-    with open(target_path) as f1:
-        targets =  [jsons.loads(line.strip(), cls=SqlDatum) for line in f1]
-    schema_map = build_schema_map(targets)
 
     evaluator = Evaluator()
     lines_by_difficulty = defaultdict(list)
 
-
     for line in lines:
-        gold = line['text']
+        gold = line['test_datum_canonical']
         if gold.count(")") == 1 and gold.count("(") == 0:
                 gold = gold.replace(")", "")
         if "faculty_participates_in" in gold:
