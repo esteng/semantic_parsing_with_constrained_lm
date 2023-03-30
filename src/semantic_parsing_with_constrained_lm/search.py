@@ -200,11 +200,11 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
             )
         token_and_logprob_iter: Iterator[Tuple[int, torch.Tensor]]
         if allowed_next is None:
-            # NOTE: Elias: why do I have to add this here now (but it worked without this before)? Was  running on CPU?
+            # NOTE (elias): move next logprobs to same device
             indices = torch.arange(next_logprobs.shape[0]).to(next_logprobs.device)
             eligible_logprobs = next_logprobs
         else:
-            # NOTE: Elias: why do I have to add this here now (but it worked without this before)? Was  running on CPU?
+            # NOTE (elias): move next logprobs to same device
             allowed_next = allowed_next.to(next_logprobs.device)
             indices = allowed_next
             eligible_logprobs = next_logprobs[allowed_next]
@@ -221,24 +221,18 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
                 k=min(self.top_k, eligible_logprobs.shape[0]),
                 sorted=False,
             )
-            try:
-                token_and_logprob_iter = (
-                    (token_id_tensor.item(), logprob)  # type: ignore
-                    for token_id_tensor, logprob in zip(
-                        indices[topk_eligible_logprobs.indices],
-                        topk_eligible_logprobs.values,
-                    )
+            token_and_logprob_iter = (
+                (token_id_tensor.item(), logprob)  # type: ignore
+                for token_id_tensor, logprob in zip(
+                    indices[topk_eligible_logprobs.indices],
+                    topk_eligible_logprobs.values,
                 )
-            except RuntimeError:
-                print(f"indices.device: {indices.device}")
-                print(f"topk_eligible_logprobs.indices.device: {topk_eligible_logprobs.indices.device}")
-                pdb.set_trace()
+            )
 
         for token, logprob in token_and_logprob_iter:
             if token in self.eos:
                 continue
             new_unnorm_cost = unnormalized_cost - logprob.item()
-            # TODO (Elias): add logprobs to node to log later on 
 
             result.append(
                 FullSearchNode(
@@ -313,6 +307,7 @@ class LoggingEventListener(BeamSearchEventListener):
     tokenizer: ClampTokenizer
     beam_size: int
     last_step: int = 0
+    silent: bool = True
 
     def step(
         self,
@@ -323,7 +318,8 @@ class LoggingEventListener(BeamSearchEventListener):
         # TODO: Print which of the expansions are being kept in the beam/finished lists.
         already_printed: Set[HashableNodeWrapper] = set()
         header = f"===== DEPTH {self.last_step} ====="
-        print(header)
+        if not self.silent: 
+            print(header)
         Instrumentation.print_last_requests()
         for _, (node, expansions) in all_expansions.items():
             if isinstance(node, FullSearchNode):
@@ -333,9 +329,10 @@ class LoggingEventListener(BeamSearchEventListener):
 
             duplicates = 0
             # `node` expands to the nodes in `expansions`.
-            print(
-                f"Completions for {self.tokenizer.decode(list(node.tokens))!r}{node_cost_str}:"
-            )
+            if not self.silent:
+                print(
+                    f"Completions for {self.tokenizer.decode(list(node.tokens))!r}{node_cost_str}:"
+                )
             for expansion in heapq.nsmallest(
                 self.beam_size * 2, expansions, key=lambda n: n.cost
             ):
@@ -347,24 +344,30 @@ class LoggingEventListener(BeamSearchEventListener):
 
                 if expansion.is_finished:
                     complete = self.tokenizer.decode(list(expansion.tokens))
-                    print(f"- Finished: {complete!r} -> [{expansion.cost:.3f}]")
+                    if not self.silent: 
+                        print(f"- Finished: {complete!r} -> [{expansion.cost:.3f}]")
                 else:
                     last_token = self.tokenizer.decode(
                         list(expansion.tokens[len(node.tokens) :])
                     )
                     if isinstance(node, FullSearchNode):
-                        print(
-                            f"- {last_token!r} [{expansion.unnormalized_cost - node.unnormalized_cost:.3f}] -> [{expansion.cost:.3f}]"
-                        )
+                        if not self.silent: 
+                            print(
+                                f"- {last_token!r} [{expansion.unnormalized_cost - node.unnormalized_cost:.3f}] -> [{expansion.cost:.3f}]"
+                            )
                     else:
                         # TODO: Get the cost of the node so that we can report the difference
-                        print(f"- {last_token!r} -> [{expansion.cost:.3f}]")
+                        if not self.silent: 
+                            print(f"- {last_token!r} -> [{expansion.cost:.3f}]")
 
             if duplicates:
-                print(f"- [{duplicates} duplicates of already printed in depth]")
+                if not self.silent: 
+                    print(f"- [{duplicates} duplicates of already printed in depth]")
             if len(expansions) > self.beam_size * 2:
-                print(f"... and {len(expansions) - self.beam_size * 2} more")
-        print("=" * len(header))
+                if not self.silent: 
+                    print(f"... and {len(expansions) - self.beam_size * 2} more")
+        if not self.silent:
+            print("=" * len(header))
         self.last_step += 1
 
 

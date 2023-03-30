@@ -273,6 +273,7 @@ class FewShotLMDecodingSetup(
             allowed_tokens, can_end = initial_partial_parse.allowed_next(
                 torch.argsort(logprobs[-1], descending=True)
             )
+            # pdb.set_trace()
             self.tokenizer_quirks.check_initial_allowed_tokens(
                 set(allowed_tokens.tolist()) if allowed_tokens is not None else None,
                 can_end,
@@ -366,7 +367,6 @@ class BeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, 
         """Returns tuple of (hypothesis, whether hypothesis was artificially kept
         alive using force_decokde, k-best list"""
         max_steps = self.max_steps_fn(test_datum) if self.max_steps_fn else None
-        # TODO (elias) add way to get token probs from beam search
         results = await beam_search(
             self.problem_factory.problem,
             self.problem_factory.initial(test_datum),
@@ -374,8 +374,9 @@ class BeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, 
             event_listener=LoggingEventListener(self.tokenizer, self.beam_size),
             max_steps=max_steps,
         )
+
         return [
-            # TODO (elias): add token probs to model result 
+            # NOTE (elias): adding token probs to model result 
             ModelResult(self.problem_factory.decoding_setup.finalize(n.tokens), 
                         n.tokens, 
                         n.cost, 
