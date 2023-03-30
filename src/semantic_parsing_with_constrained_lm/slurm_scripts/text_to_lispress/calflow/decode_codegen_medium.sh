@@ -2,7 +2,7 @@
 
 #SBATCH -o /home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs/eval_codegen_2B.out
 #SBATCH -p ba100
-#SBATCH --gpus=4
+#SBATCH --gpus=2
 
 #python -m semantic_parsing_with_constrained_lm.run_exp \
 #--config-name semantic_parsing_with_constrained_lm.configs.benchclamp_autoreg_config \
