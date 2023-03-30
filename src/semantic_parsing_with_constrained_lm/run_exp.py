@@ -354,6 +354,7 @@ def main(
         # TODO: Change log_dir argument into exp_log_dir
         exps = config_mod.build_config(log_dir, **kwargs)
         filtered_exp_dict = filter_exp_dict(exps, exp_names, exp_name_pattern)
+
         for exp_name in filtered_exp_dict:
             try:
                 exp = filtered_exp_dict[exp_name]()
