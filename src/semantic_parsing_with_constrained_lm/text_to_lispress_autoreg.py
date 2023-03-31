@@ -82,7 +82,11 @@ async def main():
 
     model = MyCodeGenForCausalLM.from_pretrained(model_args.model_name_or_path)
     # maybe parallelize 
-    do_parallel = False
+    if Path(model_args.model_name_or_path).stem == "codegen-350M" and torch.cuda.device_count() == 2:
+        device_map = {0: list(range(16)),
+                    1: list(range(16,32))}
+        model.parallelize(device_map)
+
     if Path(model_args.model_name_or_path).stem == "codegen-6B":
         if torch.cuda.device_count() == 8:
             device_map = {0: list(range(4)),
@@ -101,14 +105,12 @@ async def main():
 
         model.half()
         model.parallelize(device_map)
-        do_parallel = True
 
     elif Path(model_args.model_name_or_path).stem == "codegen-2B":
         device_map = {0: list(range(15)), 1: list(range(15, 32))}
         # device_map = {0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 32))}
         model.half()
         model.parallelize(device_map)
-        do_parallel = True
 
     elif Path(model_args.model_name_or_path).stem == "codegen-16B":
         device_map={0: list(range(9)), 
@@ -117,7 +119,6 @@ async def main():
                     3: list(range(26, 34))}
         model.half()
         model.parallelize(device_map)
-        do_parallel = True
 
     else:
         device = torch.device("cuda:0")

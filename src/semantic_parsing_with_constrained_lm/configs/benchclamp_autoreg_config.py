@@ -65,7 +65,7 @@ from semantic_parsing_with_constrained_lm.configs.benchclamp_config import HUGGI
 # VERSION = "1.10"
 
 # TODO(Elias): change back once done debugging
-LOG_DIR = Path("/brtx/602-nvme1/estengel/calflow_calibration/benchclamp/logs/")
+LOG_DIR = Path("/brtx/604-nvme1/estengel/logit_pr/logs/")
 VERSION = "1.0"
 
 BEAM_SIZE = 5
@@ -76,7 +76,7 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
     CodeGenModelConfig(
         model_id="codegen-350M",
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-350M",
-        device_map={0: list(range(4)), 1: list(range(4, 12))}
+        device_map={0: list(range(11)), 1: list(range(11, 20))}
         if torch.cuda.device_count() >= 2
         else None,
     ),

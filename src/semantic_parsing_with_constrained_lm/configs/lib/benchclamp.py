@@ -19,9 +19,6 @@ from semantic_parsing_with_constrained_lm.domains.lispress_v2.grammar import (
     create_partial_parse_builder as create_partial_parse_builder_lispress_v2,
 )
 
-from semantic_parsing_with_constrained_lm.domains.lamp.grammar import (
-    create_partial_parse_builder as create_partial_parse_builder_lamp,
-)
 from semantic_parsing_with_constrained_lm.domains.mtop.grammar import (
     create_partial_parse_builder as create_partial_parse_builder_mtop,
 )
@@ -81,17 +78,6 @@ def create_partial_parse_builder(
             BenchClampDataset.TreeDST.value,
         ):
             partial_parse_builder = create_partial_parse_builder_lispress_v2(
-                load_grammar_from_directory(
-                    os.path.join(
-                        BENCH_CLAMP_GRAMMAR_DATA_DIR,
-                        data_config.dataset_name,
-                        domain_str,
-                    )
-                ),
-                tokenizer,
-            )
-        elif data_config.dataset_name == BenchClampDataset.LAmP.value:
-            partial_parse_builder = create_partial_parse_builder_lamp(
                 load_grammar_from_directory(
                     os.path.join(
                         BENCH_CLAMP_GRAMMAR_DATA_DIR,
