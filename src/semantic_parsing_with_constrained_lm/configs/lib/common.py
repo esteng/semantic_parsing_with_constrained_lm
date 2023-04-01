@@ -15,7 +15,7 @@ from semantic_parsing_with_constrained_lm.fewshot import (
     TopKSimilar,
     TruncateTokenLength,
 )
-from semantic_parsing_with_constrained_lm.index.bm25_index import BM25Retriever
+from semantic_parsing_with_constrained_lm.index.bm25_index import BM25Retriever, LampBM25Retriever
 from semantic_parsing_with_constrained_lm.lm import (
     HS,
     AutoregressiveModel,
@@ -92,7 +92,7 @@ def make_semantic_parser(
         if use_gpt3:
             if prompt_order == PromptOrder.Shuffle:
                 train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    BM25Retriever(train_data=train_data, top_k=num_examples_per_prompt)
+                    LampBM25Retriever(train_data=train_data, top_k=num_examples_per_prompt)
                     if isinstance(similarity_method, BM25Indexer)
                     else TopKSimilar[FullDatumSub, DatumSub](
                         train_data=train_data,
@@ -113,7 +113,7 @@ def make_semantic_parser(
                 ]
             elif prompt_order == PromptOrder.BestFirst:
                 train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    BM25Retriever(train_data=train_data, top_k=num_examples_per_prompt)
+                    LampBM25Retriever(train_data=train_data, top_k=num_examples_per_prompt)
                     if isinstance(similarity_method, BM25Indexer)
                     else TopKSimilar[FullDatumSub, DatumSub](
                         train_data=train_data,
@@ -130,7 +130,7 @@ def make_semantic_parser(
                 ]
             elif prompt_order == PromptOrder.BestLast:
                 train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    BM25Retriever(
+                    LampBM25Retriever(
                         train_data=train_data,
                         top_k=num_examples_per_prompt,
                         best_first=False,
@@ -152,7 +152,7 @@ def make_semantic_parser(
                     ),
                 ]
         else:
-            train_retriever = BM25Retriever(
+            train_retriever = LampBM25Retriever(
                 train_data=train_data, top_k=num_examples_per_prompt
             )
             train_selectors = []

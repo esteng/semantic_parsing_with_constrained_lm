@@ -10,6 +10,7 @@ class Datum:
     dialogue_id: Optional[str]
     turn_part_index: Optional[int]
     agent_context: Optional[str]
+    unfilled_template: Optional[str] 
     natural: str
 
 
@@ -44,3 +45,22 @@ class BenchClampDatum:
     schema_name: Optional[str] = None
     db_schema_without_val: Optional[str] = None
     db_schema_with_val: Optional[str] = None
+    unfilled_template: Optional[str] = None
+
+@dataclass(frozen=True, eq=True)
+class LampBenchClampDatum:
+    """
+    Class to hold all possible information for each instance in BenchCLAMP only for LAMP data. 
+    This class is used to generate, read
+    and write BenchCLAMP data files. We distill it to FullDatum before using training or evaluation.
+    Fields only used for CalFlow, TreeDST: last_agent_utterance, last_user_utterance, last_plan
+    Fields only used for Spider and CoSQL:  schema_name, db_schema_without_val, db_schema_with_val
+    """
+
+    surface: str
+    lf: str
+    unfilled_template: Optional[str] = None
+    template_tags: Optional[str] = None
+    var_bindings: Optional[str] = None
+    template_idx: Optional[str] = None
+    type: Optional[str] = None

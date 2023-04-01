@@ -8,3 +8,7 @@ trained_models/
 src/semantic_parsing_with_constrained_lm/domains/calflow/data/*.jsonl
 src/semantic_parsing_with_constrained_lm/domains/calflow/grammar/grammar.scfg
 src/semantic_parsing_with_constrained_lm/domains/overnight/data/
+src/semantic_parsing_with_constrained_lm/logs
+src/semantic_parsing_with_constrained_lm/logs/*
+src/semantic_parsing_with_constrained_lm/trained_models/
+src/semantic_parsing_with_constrained_lm/trained_models/*

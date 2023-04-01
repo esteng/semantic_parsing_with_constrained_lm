@@ -75,6 +75,7 @@ class ClampDataConfig(abc.ABC):
                         natural=input_sequence,
                         canonical=datum.plan,
                         agent_context="",
+                        unfilled_template=datum.unfilled_template,
                     )
                 )
         return data_for_expt
@@ -104,14 +105,14 @@ class BenchClampDatasetConfig(ClampDataConfig):
             # dev_data_suffix = "medium"
             dev_data_suffix = self.split_name
 
-        train_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}train_{self.split_name}.jsonl"
+        train_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}train.jsonl"
         print(train_data_file) 
-        dev_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}dev_{dev_data_suffix}.jsonl"
+        dev_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}dev.jsonl"
         if self.eval_on_full_test:
-            test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test_all.jsonl"
+            test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
         else:
             # test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
-            test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test_{dev_data_suffix}.jsonl"
+            test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
 
         with BlobFile(str(train_data_file)) as bf:
             print(f"Reading {train_data_file}")

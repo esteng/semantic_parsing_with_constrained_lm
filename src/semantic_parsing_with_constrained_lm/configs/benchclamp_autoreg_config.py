@@ -6,6 +6,7 @@ Config to run evaluation experiments with BenchCLAMP with GPT-3 based language m
 approach.
 """
 import pdb 
+import copy
 import functools
 import itertools
 import sys
@@ -42,12 +43,13 @@ from semantic_parsing_with_constrained_lm.domains.benchclamp_data_setup import (
     BenchClampDatasetConfig,
     ClampDataConfig,
 )
+from semantic_parsing_with_constrained_lm.configs.benchclamp_config import extend_data_configs
 from semantic_parsing_with_constrained_lm.domains.lispress_v2.lispress_exp import TopKLispressMatch
 from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, OvernightPieces
 from semantic_parsing_with_constrained_lm.eval import Metric, TopKExactMatch
 from semantic_parsing_with_constrained_lm.fit_max_steps import compute_and_print_fit
 from semantic_parsing_with_constrained_lm.lm_gpt2 import Seq2SeqGPT2, IncrementalGPT2
-from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE
+from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE, BENCH_CLAMP_PROCESSED_DATA_DIR
 from semantic_parsing_with_constrained_lm.run_exp import Experiment
 from semantic_parsing_with_constrained_lm.finetune.lm_finetune import TrainExperiment
 
@@ -64,8 +66,7 @@ from semantic_parsing_with_constrained_lm.configs.benchclamp_config import HUGGI
 # LOG_DIR = Path("logs/")
 # VERSION = "1.10"
 
-# TODO(Elias): change back once done debugging
-LOG_DIR = Path("/brtx/604-nvme1/estengel/logit_pr/logs/")
+LOG_DIR = Path("/brtx/602-nvme1//estengel/ambiguous_parsing/logs")
 VERSION = "1.0"
 
 BEAM_SIZE = 5
@@ -279,6 +280,9 @@ def create_eval_exp(
 def create_exps_dict() -> Tuple[
     Dict[str, Callable[[], TrainExperiment]], Dict[str, Callable[[], Experiment]]
 ]:
+    data_configs = copy.deepcopy(BENCHCLAMP_DATA_CONFIGS)
+    data_configs = extend_data_configs(data_configs, BENCH_CLAMP_PROCESSED_DATA_DIR)
+
     train_exps_dict: Dict[str, Callable[[], TrainExperiment]] = {}
     eval_exps_dict: Dict[str, Callable[[], Experiment]] = {}
     for (
@@ -288,7 +292,7 @@ def create_exps_dict() -> Tuple[
         constrained,
         prompt_order,
     ) in itertools.product(
-        BENCHCLAMP_DATA_CONFIGS,
+        data_configs,
         ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),

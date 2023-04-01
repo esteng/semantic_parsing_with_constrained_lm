@@ -5,6 +5,7 @@
 Config to run training and evaluation experiments with BenchCLAMP with non-GPT-3 language models.
 """
 import pdb 
+import copy 
 import dataclasses
 import functools
 import json
@@ -24,6 +25,10 @@ from semantic_parsing_with_constrained_lm.configs.lib.benchclamp import (
     TEST_SUITE_PATH,
     create_partial_parse_builder,
 )
+from semantic_parsing_with_constrained_lm.sequence_creator import (
+    IdentitySequenceCreator,
+    SequenceCreator,
+)
 from semantic_parsing_with_constrained_lm.configs.lib.common import make_semantic_parser
 from semantic_parsing_with_constrained_lm.model import ProblemFactory, DecodingSetup
 from semantic_parsing_with_constrained_lm.datum import Datum, FullDatum
@@ -37,6 +42,7 @@ from semantic_parsing_with_constrained_lm.domains.benchclamp_data_setup import (
     BenchClampDatasetConfig,
     ClampDataConfig,
 )
+from semantic_parsing_with_constrained_lm.paths import BENCH_CLAMP_PROCESSED_DATA_DIR
 
 from semantic_parsing_with_constrained_lm.domains.lispress_v2.lispress_exp import TopKLispressMatch
 from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, OvernightPieces
@@ -414,13 +420,36 @@ def create_eval_exp(
 
     raise ValueError("Could not create eval experiment with inputs")
 
+def extend_data_configs(data_configs: List[BenchClampDatasetConfig], data_dir: Path) -> List[BenchClampDatasetConfig]:
+    """
+    Go through the dataset dir and get all valid data for LAmP
+    """
+    possible_dirs = data_dir.glob("*")
+    data_names = [x.stem for x in possible_dirs]
+    new_configs = [
+        BenchClampDatasetConfig(
+            data_id=f"lamp_no_context_all_{dataset_name}",
+            split_name="all",
+            domain=None,
+            dataset_name=dataset_name,
+            input_sequence_creator=IdentitySequenceCreator(),
+            eval_on_full_test=False,
+        )
+        for dataset_name in data_names
+    ]
+    return data_configs + new_configs
+
 
 def create_exps_dict() -> Tuple[
     Dict[str, Callable[[], TrainExperiment]], Dict[str, Callable[[], Experiment]]
 ]:
+
+    data_configs = copy.deepcopy(BENCHCLAMP_DATA_CONFIGS)
+    data_configs = extend_data_configs(data_configs, BENCH_CLAMP_PROCESSED_DATA_DIR)
+
     train_exps_dict: Dict[str, Callable[[], TrainExperiment]] = {}
     eval_exps_dict: Dict[str, Callable[[], Experiment]] = {}
-    for data_config in BENCHCLAMP_DATA_CONFIGS:
+    for data_config in data_configs:
         for train_model_config in TRAIN_MODEL_CONFIGS:
             # List of checkpoints to evaluate (names and paths)
             trained_model_locs: List[Tuple[str, Path]] = []

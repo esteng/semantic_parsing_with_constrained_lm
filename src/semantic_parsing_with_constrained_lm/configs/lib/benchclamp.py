@@ -22,6 +22,10 @@ from semantic_parsing_with_constrained_lm.domains.lispress_v2.grammar import (
 from semantic_parsing_with_constrained_lm.domains.mtop.grammar import (
     create_partial_parse_builder as create_partial_parse_builder_mtop,
 )
+
+from semantic_parsing_with_constrained_lm.domains.lamp.grammar import (
+    create_partial_parse_builder as create_partial_parse_builder_lamp,
+)
 from semantic_parsing_with_constrained_lm.domains.sql.cosql.grammar import (
     load_base_grammar,
     preprocessed_grammar_for_schema,
@@ -98,8 +102,19 @@ def create_partial_parse_builder(
                 ),
                 tokenizer,
             )
+        # elif data_config.dataset_name.startswith("lamp"):
         else:
-            raise ValueError(f"{data_config.dataset_name} not supported")
+            partial_parse_builder = create_partial_parse_builder_lamp(
+                load_grammar_from_directory(
+                    os.path.join(
+                        BENCH_CLAMP_GRAMMAR_DATA_DIR,
+                        "LAmP"
+                    )
+                ),
+                tokenizer,
+            )
+        # else:
+        #     raise ValueError(f"{data_config.dataset_name} not supported")
     else:
         partial_parse = StartsWithSpacePartialParse(tokenizer)
         partial_parse_builder = lambda _: partial_parse

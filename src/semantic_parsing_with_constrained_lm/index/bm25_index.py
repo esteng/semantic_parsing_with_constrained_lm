@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-
+import pdb 
+import re
 import random
 import tempfile
 from typing import Callable, Generic, Iterable, List, Sequence, Tuple
@@ -13,6 +14,7 @@ from semantic_parsing_with_constrained_lm.datum import DatumSub, FullDatumSub
 from semantic_parsing_with_constrained_lm.index import Candidate, DynamicIndex, Query
 from semantic_parsing_with_constrained_lm.model import DataRetriever
 
+from ambiguous_parsing.generation.fixtures.nps import NPS_MAP
 
 class PromptSchema(SchemaClass):
     text = TEXT()
@@ -112,3 +114,37 @@ class BM25Retriever(DataRetriever[FullDatumSub, DatumSub]):
             ],  # score discarded
         )
         return results
+
+class LampBM25Retriever(BM25Retriever):
+    def __init__(
+        self,
+        train_data: Sequence[FullDatumSub],
+        top_k: int = 20,
+        best_first: bool = True,
+        seed: int = 12345,
+    ):
+
+        self.index: BM25Index[DatumSub, FullDatumSub] = BM25Index.create(
+            train_data,
+            get_content=lambda c: self.anon(c.natural),  # type: ignore
+            get_query=lambda q: self.anon(q.natural),  # type: ignore
+        )
+        self.data: List[FullDatumSub] = list(train_data)
+        self.top_k = top_k
+        self.best_first = best_first
+        self.prng = random.Random(
+            seed
+        )  # a random number generator to ensure deterministic behavior
+
+    def anon(self, natural: str) -> str:
+        # replace NPs with <NP>
+        natural_split = re.split("\s+", natural)
+        for i, word in enumerate(natural_split): 
+            for np in NPS_MAP.keys():
+                if re.match(np, word):
+                    natural_split[i] = "<NP>"
+        return " ".join(natural_split)
+            
+
+
+

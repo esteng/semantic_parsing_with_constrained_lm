@@ -26,15 +26,17 @@ CLAMP_PRETRAINED_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingf
 # CLAMP_DATA_DIR = (
     # Path("/mnt/default/clamp_data/") if RUN_ON_AML else Path("data")
 # )
-CLAMP_DATA_DIR = Path("/brtx/601-nvme1/estengel/resources/data/")
+CLAMP_DATA_DIR = Path("/brtx/602-nvme1//estengel/ambiguous_parsing/data")
 
 OVERNIGHT_DATA_DIR = CLAMP_DATA_DIR / "overnight"
 
-BENCH_CLAMP_DATA_DIR_ROOT = CLAMP_DATA_DIR / "benchclamp"
+# BENCH_CLAMP_DATA_DIR_ROOT = CLAMP_DATA_DIR / "benchclamp"
+BENCH_CLAMP_DATA_DIR_ROOT = CLAMP_DATA_DIR 
+
 
 BENCH_CLAMP_RAW_DATA_DIR = BENCH_CLAMP_DATA_DIR_ROOT / "raw"
 
-BENCH_CLAMP_PROCESSED_DATA_DIR = BENCH_CLAMP_DATA_DIR_ROOT / "processed"
+BENCH_CLAMP_PROCESSED_DATA_DIR = BENCH_CLAMP_DATA_DIR_ROOT  / "processed"
 
 BENCH_CLAMP_GRAMMAR_DATA_DIR = BENCH_CLAMP_DATA_DIR_ROOT / "grammar"
 
