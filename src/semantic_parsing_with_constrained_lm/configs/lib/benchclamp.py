@@ -3,6 +3,7 @@
 
 import os
 from pathlib import Path
+import pdb 
 
 from semantic_parsing_with_constrained_lm.earley.cfg import load_grammar_from_directory
 from semantic_parsing_with_constrained_lm.datum import DatumSub
@@ -104,11 +105,14 @@ def create_partial_parse_builder(
             )
         # elif data_config.dataset_name.startswith("lamp"):
         else:
+            # fol_or_lisp = "fol" if data_config.data_id.endswith("_fol") else "lisp"
+            fol_or_lisp = "fol" if "_fol" in data_config.data_id else "lisp"
             partial_parse_builder = create_partial_parse_builder_lamp(
                 load_grammar_from_directory(
                     os.path.join(
                         BENCH_CLAMP_GRAMMAR_DATA_DIR,
-                        "LAmP"
+                        "LAmP",
+                        fol_or_lisp
                     )
                 ),
                 tokenizer,

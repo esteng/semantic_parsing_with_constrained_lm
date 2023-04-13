@@ -378,7 +378,7 @@ def create_eval_exp(
                 1000,
             )
 
-
+            is_fol = data_config.data_id.endswith("_fol")
             parser = make_semantic_parser(
                 train_data=train_data,  # type: ignore
                 lm=lm,  # type: ignore
@@ -387,6 +387,7 @@ def create_eval_exp(
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,
                 max_steps_fn=max_steps_fn,
+                is_fol=is_fol,
             )
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
                 "exact_match": TopKExactMatch(beam_size)
@@ -425,7 +426,7 @@ def extend_data_configs(data_configs: List[BenchClampDatasetConfig], data_dir: P
     Go through the dataset dir and get all valid data for LAmP
     """
     possible_dirs = data_dir.glob("*")
-    data_names = [x.stem for x in possible_dirs]
+    data_names = [x.stem  for x in possible_dirs]
     new_configs = [
         BenchClampDatasetConfig(
             data_id=f"lamp_no_context_all_{dataset_name}",

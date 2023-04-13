@@ -16,6 +16,7 @@ from semantic_parsing_with_constrained_lm.fewshot import (
     TruncateTokenLength,
 )
 from semantic_parsing_with_constrained_lm.index.bm25_index import BM25Retriever, LampBM25Retriever
+from semantic_parsing_with_constrained_lm.index.exact_match_index import LampGenerator, LampExactMatchRetriever, LampGeneralizationPPRetriever
 from semantic_parsing_with_constrained_lm.lm import (
     HS,
     AutoregressiveModel,
@@ -27,6 +28,8 @@ from semantic_parsing_with_constrained_lm.model import (
     ConstrainedDecodingProblemFactory,
     DecodingSetup,
     FewShotLMDecodingSetup,
+    FOLLampFewShotLMDecodingSetup,
+    LispLampFewShotLMDecodingSetup,
     IncrementalLMSimilarityFunction,
     ProblemFactory,
     Seq2SeqDecodingSetup,
@@ -76,6 +79,10 @@ def make_semantic_parser(
         Callable[[DecodingSetup[DatumSub, HS]], ProblemFactory[DatumSub, HS]]
     ] = None,
     similarity_method: SimilarityMethod = DefaultLM(),
+    is_fol: bool = True,
+    exp_type: str = "generalize",
+    zero_one_ratio: float = 0.5,
+    do_shuffle: bool = True,
 ) -> BeamSearchSemanticParser:
     decoding_setup: DecodingSetup[DatumSub, HS]
     if isinstance(lm, IncrementalLanguageModel):
@@ -92,7 +99,7 @@ def make_semantic_parser(
         if use_gpt3:
             if prompt_order == PromptOrder.Shuffle:
                 train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    LampBM25Retriever(train_data=train_data, top_k=num_examples_per_prompt)
+                    LampGenerator(train_data=train_data, top_k=num_examples_per_prompt)
                     if isinstance(similarity_method, BM25Indexer)
                     else TopKSimilar[FullDatumSub, DatumSub](
                         train_data=train_data,
@@ -113,7 +120,7 @@ def make_semantic_parser(
                 ]
             elif prompt_order == PromptOrder.BestFirst:
                 train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    LampBM25Retriever(train_data=train_data, top_k=num_examples_per_prompt)
+                    LampGenerator(train_data=train_data, top_k=num_examples_per_prompt)
                     if isinstance(similarity_method, BM25Indexer)
                     else TopKSimilar[FullDatumSub, DatumSub](
                         train_data=train_data,
@@ -130,7 +137,7 @@ def make_semantic_parser(
                 ]
             elif prompt_order == PromptOrder.BestLast:
                 train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    LampBM25Retriever(
+                    LampGenerator(
                         train_data=train_data,
                         top_k=num_examples_per_prompt,
                         best_first=False,
@@ -152,22 +159,43 @@ def make_semantic_parser(
                     ),
                 ]
         else:
-            train_retriever = LampBM25Retriever(
-                train_data=train_data, top_k=num_examples_per_prompt
-            )
+            # TODO (elias): param to switch between these two 
+            if exp_type == "regular":
+                train_retriever = LampGenerator(
+                    train_data=train_data, 
+                    top_k=num_examples_per_prompt,
+                    ratio=zero_one_ratio,
+                    shuffle=do_shuffle,
+                )
+            else:
+                train_retriever = LampGeneralizationPPRetriever(
+                    train_data=train_data, top_k=num_examples_per_prompt
+                )
             train_selectors = []
-
-        decoding_setup = FewShotLMDecodingSetup[FullDatumSub, DatumSub, HS](
-            # mypy complains that Callable[[FullDatumSub], PartialParse] is
-            # expected here, not sure why
-            partial_parse_builder=partial_parse_builder,
-            train_data=train_data if use_gpt3 else [],
-            train_retriever=train_retriever,
-            train_selectors=train_selectors,
-            prompt_builder=prompt_builder,
-            incremental_lm=lm,
-            tokenizer_quirks=GPT2TokenizerQuirks(lm.tokenizer),
-        )
+        if is_fol:
+            decoding_setup = FOLLampFewShotLMDecodingSetup[FullDatumSub, DatumSub, HS](
+                # mypy complains that Callable[[FullDatumSub], PartialParse] is
+                # expected here, not sure why
+                partial_parse_builder=partial_parse_builder,
+                train_data=train_data if use_gpt3 else [],
+                train_retriever=train_retriever,
+                train_selectors=train_selectors,
+                prompt_builder=prompt_builder,
+                incremental_lm=lm,
+                tokenizer_quirks=GPT2TokenizerQuirks(lm.tokenizer),
+            )
+        else:
+            decoding_setup = LispLampFewShotLMDecodingSetup[FullDatumSub, DatumSub, HS](
+                # mypy complains that Callable[[FullDatumSub], PartialParse] is
+                # expected here, not sure why
+                partial_parse_builder=partial_parse_builder,
+                train_data=train_data if use_gpt3 else [],
+                train_retriever=train_retriever,
+                train_selectors=train_selectors,
+                prompt_builder=prompt_builder,
+                incremental_lm=lm,
+                tokenizer_quirks=GPT2TokenizerQuirks(lm.tokenizer),
+            )
     elif isinstance(lm, Seq2SeqModel):
         decoding_setup = Seq2SeqDecodingSetup(
             partial_parse_builder=partial_parse_builder, seq2seq_model=lm

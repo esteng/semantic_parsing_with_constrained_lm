@@ -85,7 +85,7 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         model_id="codegen-2B",
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-2B",
         device_map={0: list(range(15)), 1: list(range(15, 32))}
-        if torch.cuda.device_count() >= 2
+        if torch.cuda.device_count() == 2
         else {0: list(range(8)),
         1: list(range(8,16)),
         2: list(range(16,24)),
@@ -100,6 +100,17 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         6: list(range(24,28)),
         7: list(range(28,32))}
         if torch.cuda.device_count() == 8
+        else {0: list(range(2)),
+        1: list(range(2,6)),
+        2: list(range(6,9)),
+        3: list(range(9,12)),
+        4: list(range(12,15)),
+        5: list(range(15,18)),
+        6: list(range(18,22)),
+        7: list(range(22,27)),
+        8: list(range(27,30)),
+        9: list(range(30,32))}
+        if torch.cuda.device_count() == 10
         else None,
     ),
     CodeGenModelConfig(
@@ -118,6 +129,16 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
     ),
     ]
 
+def get_zero_one_ratio(exp_name):
+    if exp_name[0].isdigit():
+        split_name = exp_name.split("-")
+        ratio_hundred_zero, ratio_hundred_one = split_name[0:2]
+        ratio_zero = float(ratio_hundred_zero)/100
+        ratio_one = float(ratio_hundred_one)/100
+        assert(ratio_zero + ratio_one == 1.0) 
+        return ratio_zero
+    else:
+        return None
 
 def create_eval_exp(
     exp_name: str,
@@ -230,6 +251,12 @@ def create_eval_exp(
                 1000,
             )
 
+            is_fol = "_fol" in data_config.data_id
+            exp_type = "regular" if data_config.dataset_name[0].isdigit() else "generalize"
+
+            zero_one_ratio = get_zero_one_ratio(data_config.dataset_name)
+            do_shuffle = True # TODO (elias): make config arg 
+
             parser = make_semantic_parser(
                 train_data=train_data,  # type: ignore
                 lm=lm,  # type: ignore
@@ -240,7 +267,11 @@ def create_eval_exp(
                 max_steps_fn=max_steps_fn,
                 similarity_method=BM25Indexer(),
                 prompt_order=prompt_order,
-                num_examples_per_prompt=5,
+                num_examples_per_prompt=6,
+                is_fol=is_fol,
+                exp_type=exp_type,
+                zero_one_ratio=zero_one_ratio,
+                do_shuffle=do_shuffle,
             )
 
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {

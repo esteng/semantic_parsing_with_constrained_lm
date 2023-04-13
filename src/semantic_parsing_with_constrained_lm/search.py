@@ -178,7 +178,8 @@ class ConstrainedDecodingProblem(Problem[HS, PSNSub]):
         allowed_next, can_end = partial_parse.allowed_next(
             ordered_tokens[mask[ordered_tokens]], self.top_k
         )
-
+        # print(f"allowed_next: {allowed_next}") 
+        # print(f"can_end: {can_end}") 
         result: List[FullSearchNode[HS]] = []
         if can_end:
             eos_logprob = torch.logsumexp(next_logprobs[self.eos], dim=0)
