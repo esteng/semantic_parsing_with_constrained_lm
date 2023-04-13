@@ -38,6 +38,7 @@ from semantic_parsing_with_constrained_lm.speculative_decoding import (
 )
 from semantic_parsing_with_constrained_lm.tokenization import ClampTokenizer
 
+from ambiguous_parsing.tree.formula import FOLFormula, LispFormula
 PartialParseBuilder = Callable[[DatumSub], PartialParse]
 
 
@@ -293,6 +294,39 @@ class FewShotLMDecodingSetup(
             self.incremental_lm.tokenizer.decode(tokens)
         )
 
+@dataclass
+class FOLLampFewShotLMDecodingSetup(FewShotLMDecodingSetup,
+    DecodingSetup[DatumSub, HS], Generic[FullDatumSub, DatumSub, HS]):
+
+    def finalize(self, tokens: List[int]) -> str: 
+        decoded = self.tokenizer_quirks.postprocess_result(
+            self.incremental_lm.tokenizer.decode(tokens)
+        )
+        try:
+            formula = FOLFormula.parse_formula(decoded)
+            rerendered = formula.render(ordered_vars=True)
+        except (ValueError, IndexError, AssertionError, KeyError) as e:
+            print(f"Unbound variable error on {decoded}")
+            return decoded
+        return rerendered
+
+@dataclass
+class LispLampFewShotLMDecodingSetup(FewShotLMDecodingSetup,
+    DecodingSetup[DatumSub, HS], Generic[FullDatumSub, DatumSub, HS]):
+
+    def finalize(self, tokens: List[int]) -> str: 
+        decoded = self.tokenizer_quirks.postprocess_result(
+            self.incremental_lm.tokenizer.decode(tokens)
+        )
+        try:
+            formula = LispFormula.parse_formula(decoded)
+            rerendered = formula.render(ordered_vars=True)
+        except (ValueError, IndexError, AssertionError, KeyError) as e:
+            # unbound variable error 
+            print(f"Unbound variable error on {decoded}")
+            return decoded
+        return rerendered
+
 
 @dataclass
 class Seq2SeqDecodingSetup(DecodingSetup[DatumSub, HS]):
@@ -345,6 +379,7 @@ class ModelResult:
     logprobs: List[float]
 
 
+
 class Model(Generic[DatumSub], ABC):
     """Performs the decoding for a given datum."""
 
@@ -377,7 +412,7 @@ class BeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, 
                 max_steps=max_steps,
             )
         except RuntimeError:
-        #     # NOTE (elias): adding except to avoid out-of-memory for very long inputs (very rare)
+            # NOTE (elias): adding except to avoid out-of-memory for very long inputs (very rare)
             print(f"SKIPPING LONG")
             results = []
 
