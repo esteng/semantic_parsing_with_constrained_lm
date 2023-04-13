@@ -6,6 +6,8 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, TextIO, Tuple
+import pdb 
+import re 
 
 import jsons
 from blobfile import BlobFile
@@ -76,6 +78,9 @@ class ClampDataConfig(abc.ABC):
                         canonical=datum.plan,
                         agent_context="",
                         unfilled_template=datum.unfilled_template,
+                        var_bindings=datum.var_bindings,
+                        template_idx=datum.template_idx,
+                        type=datum.type,
                     )
                 )
         return data_for_expt
@@ -105,8 +110,13 @@ class BenchClampDatasetConfig(ClampDataConfig):
             # dev_data_suffix = "medium"
             dev_data_suffix = self.split_name
 
-        train_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}train.jsonl"
-        print(train_data_file) 
+        train_suffix = ''
+        if "fewshot" in self.dataset_name:
+            # if running a fewshot experiment, use big train file with all possible strings 
+            train_suffix = "_eval"
+            # self.dataset_name = re.sub("_fewshot", "", self.dataset_name)
+        
+        train_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}train{train_suffix}.jsonl"
         dev_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}dev.jsonl"
         if self.eval_on_full_test:
             test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"

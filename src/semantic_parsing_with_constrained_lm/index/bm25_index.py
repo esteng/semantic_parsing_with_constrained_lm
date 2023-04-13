@@ -14,7 +14,7 @@ from semantic_parsing_with_constrained_lm.datum import DatumSub, FullDatumSub
 from semantic_parsing_with_constrained_lm.index import Candidate, DynamicIndex, Query
 from semantic_parsing_with_constrained_lm.model import DataRetriever
 
-from ambiguous_parsing.generation.fixtures.nps import NPS_MAP
+from ambiguous_parsing.generation.fixtures.nps import NPS_MAP, VISUAL_INSTRUMENT_NPS
 
 class PromptSchema(SchemaClass):
     text = TEXT()
@@ -139,7 +139,12 @@ class LampBM25Retriever(BM25Retriever):
     def anon(self, natural: str) -> str:
         # replace NPs with <NP>
         natural_split = re.split("\s+", natural)
-        for i, word in enumerate(natural_split): 
+        for i, word in enumerate(natural_split):
+
+            # for np in VISUAL_INSTRUMENT_NPS:
+            #     if re.match(np, word):
+            #         natural_split[i] = "<VIS_NP>"
+
             for np in NPS_MAP.keys():
                 if re.match(np, word):
                     natural_split[i] = "<NP>"
