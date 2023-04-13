@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import argparse
 import numpy as np
+import pdb 
 np.random.seed(12)
 
 
@@ -27,6 +28,9 @@ def convert(data_by_fname):
             new_datum['utterance'] = datum['surface']
             new_datum['plan'] = datum['lf']
             new_datum['unfilled_template'] = datum['unfilled_template']
+            new_datum['var_bindings'] = datum['var_bindings']
+            new_datum['template_idx'] = datum['template_idx']
+            new_datum['type'] = datum['type']
             new_data.append(new_datum)
         data_by_fname[split] = new_data
 

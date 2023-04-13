@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 from dataclasses import dataclass
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, Dict
 
 
 @dataclass(frozen=True, eq=True)
@@ -11,6 +11,9 @@ class Datum:
     turn_part_index: Optional[int]
     agent_context: Optional[str]
     unfilled_template: Optional[str] 
+    var_bindings: Optional[Dict[str, str]]
+    template_idx: Optional[str]
+    type: Optional[str]
     natural: str
 
 
@@ -46,6 +49,9 @@ class BenchClampDatum:
     db_schema_without_val: Optional[str] = None
     db_schema_with_val: Optional[str] = None
     unfilled_template: Optional[str] = None
+    var_bindings: Optional[Dict[str, str]] = None
+    template_idx: Optional[str] = None
+    type: Optional[str] = None
 
 @dataclass(frozen=True, eq=True)
 class LampBenchClampDatum:
