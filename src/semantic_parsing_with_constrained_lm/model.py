@@ -4,10 +4,12 @@
 import dataclasses
 import pdb 
 import os 
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Callable, Generic, List, MutableMapping, Optional, Sequence, Tuple, Dict, Any
 import time 
+from collections import namedtuple
 
 import torch
 import httpx
@@ -311,11 +313,15 @@ class GPT3ApiDecodingSetup(FewShotLMDecodingSetup,
 class FOLLampFewShotLMDecodingSetup(FewShotLMDecodingSetup,
     DecodingSetup[DatumSub, HS], Generic[FullDatumSub, DatumSub, HS]):
 
-    def finalize(self, tokens: List[int]) -> str: 
-        decoded = self.tokenizer_quirks.postprocess_result(
-            self.incremental_lm.tokenizer.decode(tokens)
-        )
+    def finalize(self, tokens: List[int], postprocess: bool = True) -> str: 
+        if postprocess: 
+            decoded = self.tokenizer_quirks.postprocess_result(
+                self.incremental_lm.tokenizer.decode(tokens)
+            )
+        else:
+            decoded = "".join(tokens)
         try:
+            pdb.set_trace()
             formula = FOLFormula.parse_formula(decoded)
             rerendered = formula.render(ordered_vars=True)
         except (ValueError, IndexError, AssertionError, KeyError) as e:
@@ -327,10 +333,13 @@ class FOLLampFewShotLMDecodingSetup(FewShotLMDecodingSetup,
 class LispLampFewShotLMDecodingSetup(FewShotLMDecodingSetup,
     DecodingSetup[DatumSub, HS], Generic[FullDatumSub, DatumSub, HS]):
 
-    def finalize(self, tokens: List[int]) -> str: 
-        decoded = self.tokenizer_quirks.postprocess_result(
-            self.incremental_lm.tokenizer.decode(tokens)
-        )
+    def finalize(self, tokens: List[int], postprocess: bool = True) -> str: 
+        if postprocess:
+            decoded = self.tokenizer_quirks.postprocess_result(
+                self.incremental_lm.tokenizer.decode(tokens)
+            )
+        else:
+            decoded = "".join(tokens)
         try:
             formula = LispFormula.parse_formula(decoded)
             rerendered = formula.render(ordered_vars=True)
@@ -441,6 +450,7 @@ class BeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, 
 
 @dataclass
 class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, HS]):
+    decoding_setup: DecodingSetup[DatumSub, HS]
     train_retriever: DataRetriever[FullDatumSub, DatumSub]
     train_selectors: Sequence[DataFilter[FullDatumSub, DatumSub]]
     prompt_builder: PromptBuilder[FullDatumSub, DatumSub]
@@ -450,7 +460,6 @@ class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSu
     # They could be moved to its own class so that we can also parametrize search methods.
     beam_size: int
     max_steps_fn: Optional[Callable[[DatumSub], Optional[int]]] = None
-    url: str = "https://api.openai.com/v1/completions"
     api_key: str = None 
 
     def _init_api_key(self, env: str) -> str:
@@ -465,6 +474,18 @@ class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSu
         self.completions_url = (
             f"https://api.openai.com/v1/completions"
         )
+        self.chat_completions_url = (
+            f"https://api.openai.com/v1/chat/completions"
+        )
+        if self.engine in ['gpt-3.5-turbo', 'gpt-4']: 
+            self.url = self.chat_completions_url
+            self.is_chat = True
+            self.clean_fxn = self.clean_prediction_chat
+        else:
+            self.url = self.completions_url
+            self.is_chat = False
+            self.clean_fxn = self.clean_prediction_nonchat
+
         auth_header = {"Authorization": f"Bearer {api_key}"}
 
         self.http_client = httpx.AsyncClient(
@@ -478,23 +499,76 @@ class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSu
     def build_request(self, 
                       prompt_prefix: str, 
                       max_steps: int) -> Dict[str, Any]:
-        return {"model": self.engine,
-                "prompt": prompt_prefix,
-                "max_tokens": max_steps,
+        to_ret = {"model": self.engine,
+                "max_tokens": max_steps * 3,
                 "temperature": 0.0,
                 "n": self.beam_size,
-                "logprobs": self.beam_size,
                 # "stop": "\n\n"
                 }
+        if self.is_chat: 
+            split_prefix = re.split("\n+", prompt_prefix)
+            instr = split_prefix[0]
+            human_model_turns = split_prefix[1:]
+            messages = [{"role": "user", "content": instr}]
+            for i, turn in enumerate(human_model_turns[:-1]):
+                turn = re.sub("^Human: ", "", turn)
+                turn = re.sub("^Computer: ", "", turn)
 
-    def clean_precition(self, 
-                        response: Dict[str: Any]):
+                if i % 2 == 0:
+                    messages.append({"role": "user", "content": turn})
+                else:
+                    messages.append({"role": "assistant", "content": turn})
+            to_ret['messages'] = messages
+
+        else:
+            to_ret['prompt'] = prompt_prefix
+            to_ret["logprobs"] = self.beam_size,
+        return to_ret 
+
+    def clean_prediction_chat(self, 
+                                response: Dict[str, Any]):
+        """
+        clean up predicted text for chat models 
+        """
+        data = response['choices']
+        data = sorted(data, key = lambda x: x['index'])
+        # split because finalization joins 
+        texts = [[x['message']['content']] for x in data]
+
+        tup = namedtuple('result', ['tokens', 'logprobs', 'cost'])
+        to_ret = []
+        for tokens in texts:
+            to_ret.append(tup(tokens=tokens, logprobs=[0 for _ in range(len(tokens))], cost=0.0))
+
+        return to_ret 
+
+    def clean_prediction_nonchat(self, 
+                                response: Dict[str, Any]):
         """
         clean up predicted text by trimming whitespace, taking first non-whitespace character sequence, 
         removing subsequent strings, and obtaining corresponding logprobs.
         Transform into something that can go into a list of ModelResults 
         """
-        pass 
+        data = response['choices']
+        to_ret = []
+
+        for i in range(len(data)): 
+            tokens = data[i]['logprobs']['tokens']
+            logprobs = data[i]['logprobs']['token_logprobs']
+
+            toks_to_ret, logprobs_to_ret = [], []
+            # trim starting whitespace 
+            ws = True
+            for tok, lp in zip(tokens, logprobs):
+                if re.match('\s+', tok) and ws:
+                    continue
+                else:
+                    ws = False
+                    toks_to_ret.append(tok)
+                    logprobs_to_ret.append(lp)
+            tup = namedtuple('result', ['tokens', 'logprobs', 'cost'])
+            to_ret.append(tup(tokens=toks_to_ret, logprobs=logprobs_to_ret, cost=0.0))
+        return to_ret
 
     async def predict(self, test_datum: DatumSub) -> List[ModelResult]:
         """Returns tuple of (hypothesis, whether hypothesis was artificially kept
@@ -512,16 +586,16 @@ class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSu
             selected_train_data, test_datum
         )
         # construct API request 
-        pdb.set_trace()
-        request = self.build_request(prompt_prefix, max_steps)
+        request = self.build_request(prompt_prefix, max_steps) 
         # get response 
         response = await self.http_client.post(self.url, json=request)
         response = response.json()
         # clean response and return 
-        pdb.set_trace()
+        results = self.clean_fxn(response)
+
         return [
             # TODO (elias): add token probs to model result 
-            ModelResult(self.problem_factory.decoding_setup.finalize(n.tokens), 
+            ModelResult(self.decoding_setup.finalize(n.tokens, postprocess=False), 
                         n.tokens, 
                         n.cost, 
                         n.logprobs)  # type: ignore

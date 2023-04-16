@@ -234,8 +234,8 @@ def make_semantic_parser(
 
     if use_api:
         # if using unconstrained API, no need to do constrained decoding, waste of money 
-        pdb.set_trace()
         return ApiBeamSearchSemanticParser(
+            decoding_setup=decoding_setup,
             train_retriever=train_retriever,
             train_selectors=train_selectors,
             prompt_builder=prompt_builder,

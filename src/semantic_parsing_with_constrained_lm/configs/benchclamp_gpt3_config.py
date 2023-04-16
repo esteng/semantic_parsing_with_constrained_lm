@@ -227,7 +227,7 @@ def create_exps_dict() -> Tuple[
         num_prompts,
     ) in itertools.product(
         data_configs,
-        ("gpt-3.5-turbo", "text-davinci-001", "code-davinci-001", "text-ada-001"),
+        ("gpt-3.5-turbo", "text-davinci-001", "code-davinci-001", "text-ada-001", "gpt-4"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy", "unconstrained-api"),
         PromptOrder,
