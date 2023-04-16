@@ -321,7 +321,6 @@ class FOLLampFewShotLMDecodingSetup(FewShotLMDecodingSetup,
         else:
             decoded = "".join(tokens)
         try:
-            pdb.set_trace()
             formula = FOLFormula.parse_formula(decoded)
             rerendered = formula.render(ordered_vars=True)
         except (ValueError, IndexError, AssertionError, KeyError) as e:

@@ -166,7 +166,7 @@ def create_eval_exp(
             exp_type = "regular" if data_config.dataset_name[0].isdigit() else "generalize"
             if exp_type == "generalize":
                 baseline_type = num_prompts
-                num_prompts = 1
+                num_prompts = 3
             else:
                 baseline_type = None
                 num_prompts = int(num_prompts)
