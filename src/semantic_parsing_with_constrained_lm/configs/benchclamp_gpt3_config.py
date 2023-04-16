@@ -6,6 +6,7 @@ Config to run evaluation experiments with BenchCLAMP with GPT-3 based language m
 approach.
 """
 import pdb 
+import copy
 import functools
 import itertools
 import sys
@@ -36,12 +37,14 @@ from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, O
 from semantic_parsing_with_constrained_lm.eval import Metric, TopKExactMatch
 from semantic_parsing_with_constrained_lm.fit_max_steps import compute_and_print_fit
 from semantic_parsing_with_constrained_lm.lm_openai_gpt3 import IncrementalOpenAIGPT3
-from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE
+from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE, BENCH_CLAMP_PROCESSED_DATA_DIR
 from semantic_parsing_with_constrained_lm.run_exp import Experiment
 from semantic_parsing_with_constrained_lm.finetune.lm_finetune import TrainExperiment
+from semantic_parsing_with_constrained_lm.configs.benchclamp_config import extend_data_configs
+from semantic_parsing_with_constrained_lm.configs.benchclamp_autoreg_config import get_zero_one_ratio
 
-LOG_DIR = Path("logs/")
-VERSION = "1.10"
+LOG_DIR = Path("/brtx/602-nvme1//estengel/ambiguous_parsing/logs")
+VERSION = "1.0"
 
 BEAM_SIZE = 5
 # SEARCH_MAX_STEPS = 500
@@ -51,12 +54,15 @@ SEARCH_MAX_STEPS = 50
 def create_eval_exp(
     open_ai_model_name: str,
     data_config: ClampDataConfig,
-    problem_type: Literal["constrained", "unconstrained-beam", "unconstrained-greedy"],
+    problem_type: Literal["constrained", "unconstrained-beam", "unconstrained-greedy", "unconstrained-api"],
     is_dev: bool,
     prompt_order: PromptOrder,
+    num_prompts: Any,
 ) -> Experiment:
     train_data, dev_data, test_data = data_config.setup_data()
     lm = IncrementalOpenAIGPT3(engine=open_ai_model_name)
+
+    use_api = False 
     if problem_type == "constrained":
         constrained = True
         beam_size = BEAM_SIZE
@@ -66,6 +72,10 @@ def create_eval_exp(
     elif problem_type == "unconstrained-greedy":
         constrained = False
         beam_size = 1
+    elif problem_type == "unconstrained-api": 
+        constrained = False
+        beam_size = BEAM_SIZE
+        use_api = True
     else:
         raise ValueError(f"{problem_type} not allowed")
 
@@ -151,17 +161,34 @@ def create_eval_exp(
                 ),
                 1000,
             )
+
+            is_fol = "_fol" in data_config.data_id
+            exp_type = "regular" if data_config.dataset_name[0].isdigit() else "generalize"
+            if exp_type == "generalize":
+                baseline_type = num_prompts
+                num_prompts = 1
+            else:
+                baseline_type = None
+                num_prompts = int(num_prompts)
+
+            zero_one_ratio = get_zero_one_ratio(data_config.dataset_name)
+
             parser = make_semantic_parser(
                 train_data=train_data,  # type: ignore
                 lm=lm,  # type: ignore
                 use_gpt3=True,
+                use_api=use_api,
                 global_max_steps=SEARCH_MAX_STEPS,
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,
                 max_steps_fn=max_steps_fn,
                 similarity_method=BM25Indexer(),
                 prompt_order=prompt_order,
-                num_examples_per_prompt=5, # NOTE (elias): reducing to lower token cost
+                is_fol=is_fol,
+                exp_type=exp_type,
+                zero_one_ratio=zero_one_ratio,
+                num_examples_per_prompt=num_prompts, # NOTE (elias): increase to 6 once debugging is done,
+                baseline_type=baseline_type,
             )
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
                 "exact_match": TopKExactMatch(beam_size)
@@ -186,6 +213,9 @@ def create_eval_exp(
 def create_exps_dict() -> Tuple[
     Dict[str, Callable[[], TrainExperiment]], Dict[str, Callable[[], Experiment]]
 ]:
+    data_configs = copy.deepcopy(BENCHCLAMP_DATA_CONFIGS)
+    data_configs = extend_data_configs(data_configs, BENCH_CLAMP_PROCESSED_DATA_DIR)
+
     train_exps_dict: Dict[str, Callable[[], TrainExperiment]] = {}
     eval_exps_dict: Dict[str, Callable[[], Experiment]] = {}
     for (
@@ -194,17 +224,20 @@ def create_exps_dict() -> Tuple[
         is_dev,
         constrained,
         prompt_order,
+        num_prompts,
     ) in itertools.product(
-        BENCHCLAMP_DATA_CONFIGS,
-        ("text-davinci-001", "code-davinci-001"),
+        data_configs,
+        ("gpt-3.5-turbo", "text-davinci-001", "code-davinci-001", "text-ada-001"),
         (True, False),
-        ("constrained", "unconstrained-beam", "unconstrained-greedy"),
+        ("constrained", "unconstrained-beam", "unconstrained-greedy", "unconstrained-api"),
         PromptOrder,
+        (6, 10, "baseline_instrument", "baseline_possessive", "full") 
     ):
         dev_or_test = "dev" if is_dev else "test"
         eval_exp_name = (
             f"{open_ai_model}_{data_config.data_id}_{prompt_order.value}_{dev_or_test}_"
             f"eval_{constrained}_bs_{BEAM_SIZE}"
+            f"_np_{num_prompts}"
         )
         eval_exps_dict[eval_exp_name] = functools.partial(
             create_eval_exp,
@@ -213,6 +246,7 @@ def create_exps_dict() -> Tuple[
             constrained,  # type: ignore
             is_dev=is_dev,
             prompt_order=prompt_order,
+            num_prompts=num_prompts,
         )
 
     return train_exps_dict, eval_exps_dict

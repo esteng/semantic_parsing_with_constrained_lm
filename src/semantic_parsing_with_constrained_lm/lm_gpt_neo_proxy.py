@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-"""IncrementalLanguageModel which uses OpenAI's GPT-3 API."""
+"""IncrementalLanguageModel which uses Huggingface LMs"""
 import pdb 
 import ast
 import asyncio
@@ -126,32 +126,12 @@ class GPTNeoClient:
         request_info = RequestInfo.create(args_without_engine)
         Instrumentation.currently_pending_requests += 1
         Instrumentation.record_request(request_info)
-        # pdb.set_trace()
-        # TODO (elias): get logprobs and transform into a response 
+
         prompt_tensor = torch.tensor(args_without_engine['prompt']).unsqueeze(0)
         prompt_tensor = prompt_tensor.to(self.model.device)
         result = self.model(prompt_tensor) 
         request_info.finish(True)
         return result
-        try:
-            response = await self.http_client.post(
-                self.completions_url,
-                json=args_without_engine,
-            )
-        except httpx.RequestError as e:
-            request_info.finish(False)
-            raise limits.RateLimitExceededError() from e
-        finally:
-            Instrumentation.currently_pending_requests -= 1
-
-        if response.status_code != 200:
-            request_info.finish(False)
-            if response.status_code in (429, 500, 502, 503):
-                raise limits.RateLimitExceededError()
-            raise OpenAIAPIError(response)
-
-        request_info.finish(True)
-        return response
 
 
 

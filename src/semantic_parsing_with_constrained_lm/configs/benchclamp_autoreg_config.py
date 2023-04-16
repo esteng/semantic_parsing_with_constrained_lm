@@ -147,6 +147,7 @@ def create_eval_exp(
     problem_type: Literal["constrained", "unconstrained-beam", "unconstrained-greedy"],
     is_dev: bool,
     prompt_order: PromptOrder,
+    num_prompts: Any,
 ) -> Experiment:
 
     train_data, dev_data, test_data = data_config.setup_data()
@@ -253,9 +254,13 @@ def create_eval_exp(
 
             is_fol = "_fol" in data_config.data_id
             exp_type = "regular" if data_config.dataset_name[0].isdigit() else "generalize"
+            if exp_type == "generalize":
+                baseline_type = num_prompts
+                num_prompts = 3
+            else:
+                basline_type = None 
 
             zero_one_ratio = get_zero_one_ratio(data_config.dataset_name)
-            do_shuffle = True # TODO (elias): make config arg 
 
             parser = make_semantic_parser(
                 train_data=train_data,  # type: ignore
@@ -267,11 +272,11 @@ def create_eval_exp(
                 max_steps_fn=max_steps_fn,
                 similarity_method=BM25Indexer(),
                 prompt_order=prompt_order,
-                num_examples_per_prompt=6,
+                num_examples_per_prompt=num_prompts,
                 is_fol=is_fol,
                 exp_type=exp_type,
                 zero_one_ratio=zero_one_ratio,
-                do_shuffle=do_shuffle,
+                baseline_type=baseline_type,
             )
 
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
@@ -322,17 +327,20 @@ def create_exps_dict() -> Tuple[
         is_dev,
         constrained,
         prompt_order,
+        num_prompts,
     ) in itertools.product(
         data_configs,
         ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,
+        (6, 10, "baseline_instrument", "baseline_possessive", "full") 
     ):
         dev_or_test = "dev" if is_dev else "test"
         eval_exp_name = (
             f"{open_ai_model}_{data_config.data_id}_{prompt_order.value}_{dev_or_test}_"
             f"eval_{constrained}_bs_{BEAM_SIZE}"
+            f"_np_{num_prompts}"
         )
 
         # get the right config 
@@ -345,6 +353,7 @@ def create_exps_dict() -> Tuple[
             constrained,  # type: ignore
             is_dev=is_dev,
             prompt_order=prompt_order,
+            num_prompts=num_prompts,
         )
 
     return train_exps_dict, eval_exps_dict

@@ -25,6 +25,7 @@ from semantic_parsing_with_constrained_lm.lm import (
 )
 from semantic_parsing_with_constrained_lm.model import (
     BeamSearchSemanticParser,
+    ApiBeamSearchSemanticParser,
     ConstrainedDecodingProblemFactory,
     DecodingSetup,
     FewShotLMDecodingSetup,
@@ -67,6 +68,7 @@ def make_semantic_parser(
     train_data: Sequence[FullDatumSub],
     lm: AutoregressiveModel[HS],
     use_gpt3: bool,
+    use_api: bool, 
     global_max_steps: int,
     beam_size: int,
     partial_parse_builder: Callable[[DatumSub], PartialParse],
@@ -83,6 +85,7 @@ def make_semantic_parser(
     exp_type: str = "generalize",
     zero_one_ratio: float = 0.5,
     do_shuffle: bool = True,
+    baseline_type: str = None,
 ) -> BeamSearchSemanticParser:
     decoding_setup: DecodingSetup[DatumSub, HS]
     if isinstance(lm, IncrementalLanguageModel):
@@ -97,16 +100,27 @@ def make_semantic_parser(
         )
 
         if use_gpt3:
-            if prompt_order == PromptOrder.Shuffle:
-                train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    LampGenerator(train_data=train_data, top_k=num_examples_per_prompt)
-                    if isinstance(similarity_method, BM25Indexer)
-                    else TopKSimilar[FullDatumSub, DatumSub](
-                        train_data=train_data,
-                        scorer=IncrementalLMSimilarityFunction(similarity_lm),
-                        k=num_examples_per_prompt,
-                    )
+            if exp_type == "regular":
+                train_retriever = LampGenerator(
+                    train_data=train_data, 
+                    top_k=num_examples_per_prompt,
+                    ratio=zero_one_ratio,
+                    shuffle=do_shuffle,
                 )
+            else:
+                train_retriever = LampGeneralizationPPRetriever(
+                    train_data=train_data, top_k=num_examples_per_prompt, baseline_type=baseline_type
+                )
+            if prompt_order == PromptOrder.Shuffle:
+                # train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
+                #     LampGenerator(train_data=train_data, top_k=num_examples_per_prompt)
+                #     if isinstance(similarity_method, BM25Indexer)
+                #     else TopKSimilar[FullDatumSub, DatumSub](
+                #         train_data=train_data,
+                #         scorer=IncrementalLMSimilarityFunction(similarity_lm),
+                #         k=num_examples_per_prompt,
+                #     )
+                # )
                 train_selectors = [
                     TruncateTokenLength(
                         tokenizer=lm.tokenizer,
@@ -119,15 +133,15 @@ def make_semantic_parser(
                     ),
                 ]
             elif prompt_order == PromptOrder.BestFirst:
-                train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    LampGenerator(train_data=train_data, top_k=num_examples_per_prompt)
-                    if isinstance(similarity_method, BM25Indexer)
-                    else TopKSimilar[FullDatumSub, DatumSub](
-                        train_data=train_data,
-                        scorer=IncrementalLMSimilarityFunction(similarity_lm),
-                        k=num_examples_per_prompt,
-                    )
-                )
+                # train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
+                #     LampGenerator(train_data=train_data, top_k=num_examples_per_prompt)
+                #     if isinstance(similarity_method, BM25Indexer)
+                #     else TopKSimilar[FullDatumSub, DatumSub](
+                #         train_data=train_data,
+                #         scorer=IncrementalLMSimilarityFunction(similarity_lm),
+                #         k=num_examples_per_prompt,
+                #     )
+                # )
                 train_selectors = [
                     TruncateTokenLength(
                         tokenizer=lm.tokenizer,
@@ -136,20 +150,20 @@ def make_semantic_parser(
                     ),
                 ]
             elif prompt_order == PromptOrder.BestLast:
-                train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
-                    LampGenerator(
-                        train_data=train_data,
-                        top_k=num_examples_per_prompt,
-                        best_first=False,
-                    )
-                    if isinstance(similarity_method, BM25Indexer)
-                    else TopKSimilar[FullDatumSub, DatumSub](
-                        train_data=train_data,
-                        scorer=IncrementalLMSimilarityFunction(similarity_lm),
-                        k=num_examples_per_prompt,
-                        best_first=False,
-                    )
-                )
+                # train_retriever: DataRetriever[FullDatumSub, DatumSub] = (
+                #     LampGenerator(
+                #         train_data=train_data,
+                #         top_k=num_examples_per_prompt,
+                #         best_first=False,
+                #     )
+                #     if isinstance(similarity_method, BM25Indexer)
+                #     else TopKSimilar[FullDatumSub, DatumSub](
+                #         train_data=train_data,
+                #         scorer=IncrementalLMSimilarityFunction(similarity_lm),
+                #         k=num_examples_per_prompt,
+                #         best_first=False,
+                #     )
+                # )
                 train_selectors = [
                     TruncateTokenLength(
                         tokenizer=lm.tokenizer,
@@ -158,8 +172,7 @@ def make_semantic_parser(
                         reverse=True,
                     ),
                 ]
-        else:
-            # TODO (elias): param to switch between these two 
+
             if exp_type == "regular":
                 train_retriever = LampGenerator(
                     train_data=train_data, 
@@ -169,9 +182,25 @@ def make_semantic_parser(
                 )
             else:
                 train_retriever = LampGeneralizationPPRetriever(
-                    train_data=train_data, top_k=num_examples_per_prompt
+                    train_data=train_data, top_k=num_examples_per_prompt, baseline_type=baseline_type
+                )
+        else:
+            if exp_type == "regular":
+                train_retriever = LampGenerator(
+                    train_data=train_data, 
+                    top_k=num_examples_per_prompt,
+                    ratio=zero_one_ratio,
+                    shuffle=do_shuffle,
+                )
+            else:
+                train_retriever = LampGeneralizationPPRetriever(
+                    train_data=train_data, top_k=num_examples_per_prompt, baseline_type=baseline_type
                 )
             train_selectors = []
+
+        # if use_api: 
+        #     pass 
+        # else:
         if is_fol:
             decoding_setup = FOLLampFewShotLMDecodingSetup[FullDatumSub, DatumSub, HS](
                 # mypy complains that Callable[[FullDatumSub], PartialParse] is
@@ -203,20 +232,32 @@ def make_semantic_parser(
     else:
         raise ValueError("Unsupported type for lm")
 
-    problem_factory: ProblemFactory[DatumSub, HS]
-    if problem_factory_builder is None:
-        problem_factory = ConstrainedDecodingProblemFactory(
-            autoregressive_model=lm,
-            decoding_setup=decoding_setup,
-            length_normalization=0.7,
-            top_k=beam_size,
+    if use_api:
+        # if using unconstrained API, no need to do constrained decoding, waste of money 
+        pdb.set_trace()
+        return ApiBeamSearchSemanticParser(
+            train_retriever=train_retriever,
+            train_selectors=train_selectors,
+            prompt_builder=prompt_builder,
+            engine=lm.engine,
+            beam_size=beam_size,
+            max_steps_fn=max_steps_fn,
         )
     else:
-        problem_factory = problem_factory_builder(decoding_setup)
+        problem_factory: ProblemFactory[DatumSub, HS]
+        if problem_factory_builder is None:
+            problem_factory = ConstrainedDecodingProblemFactory(
+                autoregressive_model=lm,
+                decoding_setup=decoding_setup,
+                length_normalization=0.7,
+                top_k=beam_size,
+            )
+        else:
+            problem_factory = problem_factory_builder(decoding_setup)
 
-    return BeamSearchSemanticParser(
-        problem_factory=problem_factory,
-        tokenizer=lm.tokenizer,
-        beam_size=beam_size,
-        max_steps_fn=max_steps_fn,
-    )
+        return BeamSearchSemanticParser(
+            problem_factory=problem_factory,
+            tokenizer=lm.tokenizer,
+            beam_size=beam_size,
+            max_steps_fn=max_steps_fn,
+        )

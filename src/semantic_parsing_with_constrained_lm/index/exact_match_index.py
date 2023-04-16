@@ -172,12 +172,14 @@ class LampGeneralizationPPRetriever(DataRetriever[FullDatumSub, DatumSub]):
         best_first: bool = True,
         shuffle: bool = True,
         seed: int = 12345,
+        baseline_type: str = None,
     ):
         self.index: ExactMatchIndex[DatumSub, FullDatumSub] = ExactMatchIndex.create(
             train_data,
             get_content=lambda c: c.natural,  # type: ignore
             get_query=lambda q: q.natural,  # type: ignore
         )
+        self.baseline_type = baseline_type
 
         self.data: List[FullDatumSub] = list(train_data)
         self.top_k = top_k
@@ -240,14 +242,24 @@ class LampGeneralizationPPRetriever(DataRetriever[FullDatumSub, DatumSub]):
                 instrument_result_idx = i
             if d.natural == possessive_test_datum.natural:
                 possessive_result_idx = i
+
+        # TODO: add in some similar ones based on the index 
         # transitive_result_idx = self.index.search(transitive_test_datum, top_k = 1)[0][0]
         # possessive_result_idx = self.index.search(possessive_test_datum, top_k = 1)[0][0]
         # instrument_result_idx = self.index.search(instrument_test_datum, top_k = 1)[0][0]
         # result_idxs = self.index.search(test_datum, top_k=self.top_k) 
-        try:
+        if self.baseline_type == "baseline_instrument": 
+            # randomly choose ONLY one of possessive or instrument 
+            # idxs = [transitive_result_idx] + np.random.choice([possessive_result_idx, instrument_result_idx], 1).tolist()
+            # Choose just index for now 
+            idxs = [transitive_result_idx, instrument_result_idx]
+        elif self.baseline_type == "baseline_possessive": 
+            idxs = [transitive_result_idx, possessive_result_idx]
+        else: 
+            assert(self.baseline_type in [None, "full"])
+            # baseline is None, normal prompt with ambiguous signal 
             idxs = [transitive_result_idx, possessive_result_idx, instrument_result_idx]
-            np.random.shuffle(idxs)
-            results = [self.data[idx] for idx in idxs]
-        except:
-            pdb.set_trace()
+
+        np.random.shuffle(idxs)
+        results = [self.data[idx] for idx in idxs]
         return results

@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 """IncrementalLanguageModel which uses OpenAI's GPT-3 API."""
-
+import pdb 
 import ast
 import asyncio
 import collections
@@ -105,7 +105,7 @@ class GPT3Client:
         else:
             api_key = self._init_api_key("OPENAI_API_KEY")
             self.completions_url = (
-                f"https://api.openai.com/v1/engines/{self.engine}/completions"
+                f"https://api.openai.com/v1/completions"
             )
             auth_header = {"Authorization": f"Bearer {api_key}"}
 
@@ -161,6 +161,7 @@ class GPT3Client:
 @dataclass(frozen=True)
 class EchoBatchMaker(BatchMaker):
     client: GPT3Client = dataclasses.field(compare=False)
+    engine: str 
 
     @property
     def max_batch_size(self) -> int:
@@ -172,6 +173,7 @@ class EchoBatchMaker(BatchMaker):
 
     async def execute(self, batched_tokens: List[Sequence[int]]) -> List[List[float]]:
         args = {
+            "model": self.engine,
             "prompt": batched_tokens,
             "max_tokens": 0,
             "echo": True,
@@ -187,6 +189,7 @@ class EchoBatchMaker(BatchMaker):
 @dataclass(frozen=True)
 class NextLogprobsBatchMaker(BatchMaker):
     client: GPT3Client = dataclasses.field(compare=False)
+    engine: str 
 
     @property
     def max_batch_size(self) -> int:
@@ -200,6 +203,7 @@ class NextLogprobsBatchMaker(BatchMaker):
         self, batched_tokens: List[Sequence[int]]
     ) -> List[Dict[str, float]]:
         args = {
+            "model": self.engine,
             "prompt": batched_tokens,
             "max_tokens": 1,
             "logprobs": 100,
@@ -208,7 +212,21 @@ class NextLogprobsBatchMaker(BatchMaker):
         results = (
             await self.client.completions_rate_limited(args)  # type: ignore
         ).json()
-        return [d["logprobs"]["top_logprobs"][0] for d in results["choices"]]
+
+        to_ret = []
+        for d in results['choices']:
+            if len(d['logprobs']['top_logprobs']) > 0:
+                to_ret.append(d['logprobs']['top_logprobs'][0])
+            else:
+                to_ret.append({})
+        return to_ret
+        # try:
+        #     return [d["logprobs"]["top_logprobs"][0] for d in results["choices"]]
+        # except IndexError:
+            # sometimes a choice for a given beam is empty. This is caused by finish_reason = stop, 
+            # so we need to turn it into a pad token since that beam is over
+            # pdb.set_trace()
+            # results['choices'] = [x for x in results['choices'] if len(x['logprobs']['top_logprobs']) > 0]
 
 
 @dataclass(frozen=True)
@@ -224,6 +242,7 @@ class CompletionsParams:
 class CompletionsBatchMaker(BatchMaker):
     client: GPT3Client = dataclasses.field(compare=False)
     params: CompletionsParams
+    engine: str
 
     @property
     def max_batch_size(self) -> int:
@@ -241,6 +260,7 @@ class CompletionsBatchMaker(BatchMaker):
         # Each Tuple contains two (parallel) lists: tokens and their log probabilities
         batched_tokens = [x[0] for x in args]
         params = {
+            "model": self.engine,
             "prompt": batched_tokens,
             "max_tokens": self.params.max_tokens,
             "temperature": self.params.temperature,
@@ -299,13 +319,13 @@ class IncrementalOpenAIGPT3(IncrementalLanguageModel[OpenAIGPT3State]):
         client = GPT3Client(engine=self.engine)
         self.client = client
         self.echo_batch_helper = BatchingHelper(
-            input_to_batch_maker=lambda _args: EchoBatchMaker(client),
+            input_to_batch_maker=lambda _args: EchoBatchMaker(client, self.engine),
         )
         self.next_logprobs_batch_helper = BatchingHelper(
-            input_to_batch_maker=lambda _args: NextLogprobsBatchMaker(client),
+            input_to_batch_maker=lambda _args: NextLogprobsBatchMaker(client, self.engine),
         )
         self.completions_batch_helper = BatchingHelper(
-            input_to_batch_maker=lambda args: CompletionsBatchMaker(client, args[1]),
+            input_to_batch_maker=lambda args: CompletionsBatchMaker(client, args[1], self.engine),
         )
         if self.client.cache_client is None:
             self.use_cache = False
@@ -348,6 +368,7 @@ class IncrementalOpenAIGPT3(IncrementalLanguageModel[OpenAIGPT3State]):
 
         if self.use_cache and self.client.cache_client:
             cache_args = {
+                "model": self.engine,
                 "engine": self.engine,
                 "prompt": all_tokens,
                 "max_tokens": 1,
@@ -361,6 +382,7 @@ class IncrementalOpenAIGPT3(IncrementalLanguageModel[OpenAIGPT3State]):
         if cached:
             next_logprobs = cached["choices"][0]["logprobs"]["top_logprobs"][0]
         else:
+            # pdb.set_trace()
             batched_next_logprobs, i = await self.next_logprobs_batch_helper.execute(
                 all_tokens
             )
@@ -398,6 +420,7 @@ class IncrementalOpenAIGPT3(IncrementalLanguageModel[OpenAIGPT3State]):
         if self.use_cache and self.client.cache_client:
             assert self.client.cache_client is not None
             cache_args = {
+                "model": self.engine,
                 "prompt": all_tokens,
                 "max_tokens": 0,
                 "echo": True,
@@ -443,6 +466,8 @@ class IncrementalOpenAIGPT3(IncrementalLanguageModel[OpenAIGPT3State]):
         """Corresponds to completions endpoint of OpenAI API.
 
         https://beta.openai.com/docs/api-reference/completions/create"""
+
+        pdb.set_trace()
         if hidden_state is None:
             all_tokens = tuple(tokens)
         else:

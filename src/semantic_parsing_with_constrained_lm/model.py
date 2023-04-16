@@ -3,11 +3,14 @@
 
 import dataclasses
 import pdb 
+import os 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Callable, Generic, List, MutableMapping, Optional, Sequence, Tuple
+from typing import Callable, Generic, List, MutableMapping, Optional, Sequence, Tuple, Dict, Any
+import time 
 
 import torch
+import httpx
 from cached_property import cached_property
 
 from semantic_parsing_with_constrained_lm.datum import Datum, DatumSub, FullDatum, FullDatumSub
@@ -294,6 +297,16 @@ class FewShotLMDecodingSetup(
             self.incremental_lm.tokenizer.decode(tokens)
         )
 
+
+@dataclass
+class GPT3ApiDecodingSetup(FewShotLMDecodingSetup,
+    DecodingSetup[DatumSub, HS], Generic[FullDatumSub, DatumSub, HS]): 
+
+    def finalize(self, tokens: List[int]) -> str:
+        return self.tokenizer_quirks.postprocess_result(
+            self.incremental_lm.tokenizer.decode(tokens)
+        )
+
 @dataclass
 class FOLLampFewShotLMDecodingSetup(FewShotLMDecodingSetup,
     DecodingSetup[DatumSub, HS], Generic[FullDatumSub, DatumSub, HS]):
@@ -416,6 +429,96 @@ class BeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, 
             print(f"SKIPPING LONG")
             results = []
 
+        return [
+            # TODO (elias): add token probs to model result 
+            ModelResult(self.problem_factory.decoding_setup.finalize(n.tokens), 
+                        n.tokens, 
+                        n.cost, 
+                        n.logprobs)  # type: ignore
+            for n in results
+        ]
+
+
+@dataclass
+class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSub, HS]):
+    train_retriever: DataRetriever[FullDatumSub, DatumSub]
+    train_selectors: Sequence[DataFilter[FullDatumSub, DatumSub]]
+    prompt_builder: PromptBuilder[FullDatumSub, DatumSub]
+    engine: str
+
+    # Beam search-related parameters.
+    # They could be moved to its own class so that we can also parametrize search methods.
+    beam_size: int
+    max_steps_fn: Optional[Callable[[DatumSub], Optional[int]]] = None
+    url: str = "https://api.openai.com/v1/completions"
+    api_key: str = None 
+
+    def _init_api_key(self, env: str) -> str:
+        if self.api_key is None:
+            self.api_key = os.getenv(env)
+        if self.api_key is None:
+            raise ValueError(f"{env} was not set")
+        return self.api_key
+
+    def __post_init__(self):
+        api_key = self._init_api_key("OPENAI_API_KEY")
+        self.completions_url = (
+            f"https://api.openai.com/v1/completions"
+        )
+        auth_header = {"Authorization": f"Bearer {api_key}"}
+
+        self.http_client = httpx.AsyncClient(
+            headers=auth_header,
+            # HTTP/2 should be more efficient, but it appears to be buggy in practice
+            http2=False,
+            timeout=httpx.Timeout(60.0),
+            limits=httpx.Limits(max_connections=500, max_keepalive_connections=500),
+        )
+
+    def build_request(self, 
+                      prompt_prefix: str, 
+                      max_steps: int) -> Dict[str, Any]:
+        return {"model": self.engine,
+                "prompt": prompt_prefix,
+                "max_tokens": max_steps,
+                "temperature": 0.0,
+                "n": self.beam_size,
+                "logprobs": self.beam_size,
+                # "stop": "\n\n"
+                }
+
+    def clean_precition(self, 
+                        response: Dict[str: Any]):
+        """
+        clean up predicted text by trimming whitespace, taking first non-whitespace character sequence, 
+        removing subsequent strings, and obtaining corresponding logprobs.
+        Transform into something that can go into a list of ModelResults 
+        """
+        pass 
+
+    async def predict(self, test_datum: DatumSub) -> List[ModelResult]:
+        """Returns tuple of (hypothesis, whether hypothesis was artificially kept
+        alive using force_decokde, kbest list"""
+        # get a prompt for the API
+        max_steps = self.max_steps_fn(test_datum) if self.max_steps_fn else None
+        selected_train_data: Sequence[FullDatumSub] = await self.train_retriever(
+            test_datum
+        )
+        for train_selector in self.train_selectors:
+            selected_train_data = await train_selector(
+                selected_train_data, test_datum
+            )
+        prompt_prefix = self.prompt_builder.assemble(
+            selected_train_data, test_datum
+        )
+        # construct API request 
+        pdb.set_trace()
+        request = self.build_request(prompt_prefix, max_steps)
+        # get response 
+        response = await self.http_client.post(self.url, json=request)
+        response = response.json()
+        # clean response and return 
+        pdb.set_trace()
         return [
             # TODO (elias): add token probs to model result 
             ModelResult(self.problem_factory.decoding_setup.finalize(n.tokens), 
