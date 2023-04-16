@@ -11,5 +11,4 @@
 
 python -m semantic_parsing_with_constrained_lm.run_exp \
 --config-name semantic_parsing_with_constrained_lm.configs.benchclamp_autoreg_config \
---exp-name-pattern 'codegen-2B_lamp_no_context_all_50-50-5k-train-100-perc-ambig_lisp_fewshot_2_test_eval_constrained_bs_5'
-
+--exp-name-pattern "codegen-2B_lamp_no_context_all_${SPLIT}-5k-train-100-perc-ambig_lisp_fewshot_2_test_eval_constrained_bs_5_np_10"
