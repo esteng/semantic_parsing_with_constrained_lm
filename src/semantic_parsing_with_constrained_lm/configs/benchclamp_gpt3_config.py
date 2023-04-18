@@ -178,6 +178,7 @@ def create_eval_exp(
                 lm=lm,  # type: ignore
                 use_gpt3=True,
                 use_api=use_api,
+                data_id=data_config.data_id,
                 global_max_steps=SEARCH_MAX_STEPS,
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,

@@ -258,7 +258,7 @@ def create_eval_exp(
                 baseline_type = num_prompts
                 num_prompts = 3
             else:
-                basline_type = None 
+                baseline_type = None 
 
             zero_one_ratio = get_zero_one_ratio(data_config.dataset_name)
 
@@ -266,6 +266,8 @@ def create_eval_exp(
                 train_data=train_data,  # type: ignore
                 lm=lm,  # type: ignore
                 use_gpt3=False,
+                use_api=False,
+                data_id=data_config.data_id,
                 global_max_steps=SEARCH_MAX_STEPS,
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,
