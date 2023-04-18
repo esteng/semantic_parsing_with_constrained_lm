@@ -16,7 +16,14 @@ from semantic_parsing_with_constrained_lm.fewshot import (
     TruncateTokenLength,
 )
 from semantic_parsing_with_constrained_lm.index.bm25_index import BM25Retriever, LampBM25Retriever
-from semantic_parsing_with_constrained_lm.index.exact_match_index import LampGenerator, LampExactMatchRetriever, LampGeneralizationPPRetriever
+from semantic_parsing_with_constrained_lm.index.exact_match_index import LampGenerator, LampExactMatchRetriever
+from semantic_parsing_with_constrained_lm.index.lamp_index import (
+    LampGeneralizationPPRetriever, 
+    LampGeneralizationScopeRetriever, 
+    LampGeneralizationRevscopeRetriever,
+    LampGeneralizationBoundRetriever,
+    LampGeneralizationConjRetriever
+)
 from semantic_parsing_with_constrained_lm.lm import (
     HS,
     AutoregressiveModel,
@@ -64,11 +71,19 @@ class BM25Indexer(SimilarityMethod):
     pass
 
 
+ALL_RETRIEVERS = {"pp": LampGeneralizationPPRetriever,
+                 "scope": LampGeneralizationScopeRetriever,
+                "revscope": LampGeneralizationRevscopeRetriever,
+                "bound": LampGeneralizationBoundRetriever,
+                "conj": LampGeneralizationConjRetriever
+}
+
 def make_semantic_parser(
     train_data: Sequence[FullDatumSub],
     lm: AutoregressiveModel[HS],
     use_gpt3: bool,
     use_api: bool, 
+    data_id: str,
     global_max_steps: int,
     beam_size: int,
     partial_parse_builder: Callable[[DatumSub], PartialParse],
@@ -181,7 +196,8 @@ def make_semantic_parser(
                     shuffle=do_shuffle,
                 )
             else:
-                train_retriever = LampGeneralizationPPRetriever(
+                amb_type = data_id.split("_")[-2]
+                train_retriever = ALL_RETRIEVERS[amb_type](
                     train_data=train_data, top_k=num_examples_per_prompt, baseline_type=baseline_type
                 )
         else:
@@ -193,7 +209,8 @@ def make_semantic_parser(
                     shuffle=do_shuffle,
                 )
             else:
-                train_retriever = LampGeneralizationPPRetriever(
+                amb_type = data_id.split("_")[-2]
+                train_retriever = ALL_RETRIEVERS[amb_type](
                     train_data=train_data, top_k=num_examples_per_prompt, baseline_type=baseline_type
                 )
             train_selectors = []
