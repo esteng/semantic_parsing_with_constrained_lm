@@ -14,12 +14,14 @@ from transformers import (
     CodeGenForCausalLM,
     PreTrainedModel,
     T5ForConditionalGeneration,
+    LlamaForCausalLM
 )
 
 from semantic_parsing_with_constrained_lm.lm import Seq2SeqSettings, Surround
 from semantic_parsing_with_constrained_lm.tokenization import (
     ClampTokenizer,
     GPT2ClampTokenizer,
+    LlamaClampTokenizer,
     BartClampTokenizer,
     T5ClampTokenizer,
 )
@@ -153,6 +155,26 @@ class CodeGenModelConfig(ClampModelConfig):
                 bos=[34556, 25], eos=[198], starts_with_space=True
             ),  # bos: "Computer:", eos: "\n"
             decoder_start_token_id=None,
+        )
+        self.maybe_parallelize(model)
+        model.eval()
+        return model, tokenizer, seq2seq_settings
+
+class LlamaModelConfig(ClampModelConfig):
+    def setup_model(self) -> Tuple[PreTrainedModel, ClampTokenizer, Seq2SeqSettings]:
+        if not self.model_loc.exists():
+            raise TrainedModelNotFoundError(
+                f"Model files not found in {self.model_loc}"
+            )
+        model = LlamaForCausalLM.from_pretrained(self.model_loc)
+        # use mixed precision 
+        model.half()
+
+        tokenizer = LlamaClampTokenizer.from_pretrained(str(self.model_loc))
+        seq2seq_settings = Seq2SeqSettings(
+            input_surround=Surround(bos=[], eos=[1], starts_with_space=True),
+            output_surround=Surround(bos=[], eos=[1], starts_with_space=True),
+            decoder_start_token_id=tokenizer.pad_token_id,
         )
         self.maybe_parallelize(model)
         model.eval()

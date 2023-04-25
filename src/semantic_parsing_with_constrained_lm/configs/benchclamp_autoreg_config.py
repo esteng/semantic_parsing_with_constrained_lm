@@ -60,6 +60,7 @@ from semantic_parsing_with_constrained_lm.train_model_setup import (
     CodeT5ModelConfig,
     GPT2ModelConfig,
     T5ModelConfig,
+    LlamaModelConfig,
 )
 from semantic_parsing_with_constrained_lm.configs.benchclamp_config import HUGGINGFACE_MODEL_DIR
 
@@ -125,6 +126,13 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-16B",
         device_map={0: list(range(9)), 1: list(range(9, 17)), 2: list(range(17, 26)), 3: list(range(26, 34))}
         if torch.cuda.device_count() == 4
+        else None,
+    ),
+    LlamaModelConfig(
+        model_id="llama-7B",
+        model_loc=HUGGINGFACE_MODEL_DIR / "llama-7B",
+        device_map={0: list(range(11)), 1: list(range(11, 22)), 2: list(range(22, 33))}
+        if torch.cuda.device_count() >= 3
         else None,
     ),
     ]
@@ -332,7 +340,7 @@ def create_exps_dict() -> Tuple[
         num_prompts,
     ) in itertools.product(
         data_configs,
-        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B"),
+        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", "llama-7B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,

@@ -182,6 +182,31 @@ class PromptBuilder(Generic[TrainDatum, TestDatum]):
             separator="\n",
         )
 
+    @staticmethod
+    def for_llama(
+        do_include_context: bool, use_preamble: bool = True
+    ) -> "PromptBuilder":
+        input_field_order = (["agent_context"] if do_include_context else []) + [
+            "natural"
+        ]
+        field_to_adornment = {
+            "natural": Adornment("Human: ", "\n"),
+            "canonical": Adornment("Computer: ", ""),
+        }
+        if do_include_context:
+            field_to_adornment["agent_context"] = Adornment("Agent: ", "\n")
+        return PromptBuilder(
+            problem_spec=ProblemSpec(
+                input_fields=frozenset(input_field_order), output_field="canonical"
+            ),
+            preamble="Let's translate what a human user says into what a computer might say.\n\n"
+            if use_preamble
+            else None,
+            input_field_order=input_field_order,
+            field_to_adornment=field_to_adornment,
+            separator="\n",
+        )
+
 
 class DataRetriever(Generic[TrainDatum, TestDatum]):
     """
@@ -333,6 +358,9 @@ class TruncateTokenLength(DataFilter[TrainDatum, TestDatum]):
 class InvalidForGPT2Tokenizer(Exception):
     pass
 
+class InvalidForSPTokenizer(Exception):
+    pass
+
 
 @dataclass
 class GPT2TokenizerQuirks:
@@ -352,6 +380,69 @@ class GPT2TokenizerQuirks:
             self.prompt_ends_in_space = True
         else:
             raise InvalidForGPT2Tokenizer(
+                "Output prefix does not end in a newline or a space. Please "
+                "think hard about how that interacts with the tokenizer and add a "
+                "new elif here if you still want to use that prompt style."
+            )
+
+    def check_initial_allowed_tokens(
+        self, tokens: Optional[AbstractSet[int]], can_end: bool
+    ) -> None:
+        if self.prompt_ends_in_space is None:
+            raise Exception("Run check_prompt_builder() first")
+
+        if not self.prompt_ends_in_space:
+            return
+
+        if self.space_tokens is None:
+            self.space_tokens = {
+                i
+                for token, i in self.tokenizer.utf8_token_to_id_map.items()
+                if token.startswith(b" ")
+            }
+
+        if can_end:
+            raise InvalidForGPT2Tokenizer(
+                "Can't end with no tokens; need to generate at least a space"
+            )
+        if tokens is None or len(tokens - self.space_tokens) != 0:
+            raise InvalidForGPT2Tokenizer("All allowed tokens must start with a space")
+
+    def postprocess_prompt(self, prompt: str) -> str:
+        """Adapt the prompt to not end in a space"""
+        if self.prompt_ends_in_space is None:
+            raise Exception("Run check_prompt_builder() first")
+        if self.prompt_ends_in_space:
+            return prompt[:-1]
+        else:
+            return prompt
+
+    def postprocess_result(self, result: str) -> str:
+        if self.prompt_ends_in_space is None:
+            raise Exception("Run check_prompt_builder() first")
+        if self.prompt_ends_in_space:
+            return result[1:]
+        else:
+            return result
+
+@dataclass
+class SPTokenizerQuirks:
+    """Methods for handling unintuitive consequences of SentencePiece tokenization."""
+
+    tokenizer: ClampTokenizer
+    space_tokens: Optional[Set[int]] = None
+    prompt_ends_in_space: Optional[bool] = None
+
+    def check_prompt_builder(self, prompt_builder: PromptBuilder) -> None:
+        output_prefix = prompt_builder.fixed_text_before_output
+        if len(output_prefix) == 0:
+            raise InvalidForSPTokenizer("A non-empty output prefix is required")
+        if output_prefix[-1] == "\n":
+            self.prompt_ends_in_space = False
+        elif output_prefix[-1] == " ":
+            self.prompt_ends_in_space = True
+        else:
+            raise InvalidForSPTokenizer(
                 "Output prefix does not end in a newline or a space. Please "
                 "think hard about how that interacts with the tokenizer and add a "
                 "new elif here if you still want to use that prompt style."

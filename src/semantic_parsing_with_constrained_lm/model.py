@@ -220,6 +220,7 @@ class FewShotLMDecodingSetup(
             for token, i in self.incremental_lm.tokenizer.utf8_token_to_id_map.items()
             if token.startswith(eos_bytes)
         }
+        pdb.set_trace()
         tokens_containing_eos = {
             i
             for token, i in self.incremental_lm.tokenizer.utf8_token_to_id_map.items()

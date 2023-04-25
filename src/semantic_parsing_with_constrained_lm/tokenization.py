@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-
+import pdb 
 import tempfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Dict, Iterable, List, Optional
 
 import sentencepiece.sentencepiece_model_pb2 as sentencepiece_model
 from cached_property import cached_property
-from transformers import GPT2Tokenizer, T5Tokenizer, BartTokenizer, RobertaTokenizer
+from transformers import GPT2Tokenizer, T5Tokenizer, BartTokenizer, RobertaTokenizer, LlamaTokenizer
 
 if TYPE_CHECKING:
     # pylint: disable=reimported
@@ -156,6 +156,9 @@ class RobertaClampTokenizer(GPT2ClampTokenizer):
         return RobertaClampTokenizer(
             tokenizer=RobertaTokenizer.from_pretrained(tokenizer_loc)
         )
+
+
+
 class T5ClampTokenizer(ClampTokenizer):
     def __init__(
         self, tokenizer: T5Tokenizer, output_sequences: Optional[Iterable[str]] = None
@@ -184,11 +187,13 @@ class T5ClampTokenizer(ClampTokenizer):
 
         with open(spiece_model_file, "wb") as f:
             f.write(m.SerializeToString())
+
         self.tokenizer = T5Tokenizer.from_pretrained(tmp_tokenizer_loc)
         self.token_to_id_map = {
             k.replace("▁", " ").encode("utf-8"): v
             for k, v in self.tokenizer.get_vocab().items()
         }
+
         if output_sequences is not None:
             self.update_tokenizer_with_output_sequences(output_sequences)
 
@@ -262,4 +267,28 @@ class T5ClampTokenizer(ClampTokenizer):
         return T5ClampTokenizer(
             tokenizer=T5Tokenizer.from_pretrained(tokenizer_loc),
             output_sequences=output_sequences,
+        )
+
+class LlamaClampTokenizer(T5ClampTokenizer):
+    def __init__(self, tokenizer: LlamaTokenizer):
+
+
+        self.tokenizer = tokenizer
+        self.tokenizer.add_tokens(["\n", " "])
+        self.token_to_id_map = {
+            k.replace("▁", " ").encode("utf-8"): v
+            for k, v in self.tokenizer.get_vocab().items()
+        }
+        # reset cache 
+        del self.__dict__['id_to_utf8_token_map']
+        self.id_to_utf8_token_map
+
+        # self.id_to_utf8_token_map = {v: k for k, v in self.utf8_token_to_id_map.items()}
+        # pdb.set_trace()
+
+
+    @classmethod
+    def from_pretrained(cls, tokenizer_loc: str) -> "LlamaClampTokenizer":
+        return LlamaClampTokenizer(
+            tokenizer=LlamaTokenizer.from_pretrained(tokenizer_loc)
         )
