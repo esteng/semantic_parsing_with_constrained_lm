@@ -131,8 +131,28 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
     LlamaModelConfig(
         model_id="llama-7B",
         model_loc=HUGGINGFACE_MODEL_DIR / "llama-7B",
-        device_map={0: list(range(11)), 1: list(range(11, 22)), 2: list(range(22, 33))}
-        if torch.cuda.device_count() >= 3
+        device_map={0: list(range(15)), 1: list(range(15, 32))}
+        if torch.cuda.device_count() == 2
+        else {0: list(range(11)), 1: list(range(11, 22)), 2: list(range(22, 32))}
+        if torch.cuda.device_count() == 3
+        else {0: list(range(2)),
+        1: list(range(2,6)),
+        2: list(range(6,9)),
+        3: list(range(9,12)),
+        4: list(range(12,15)),
+        5: list(range(15,18)),
+        6: list(range(18,22)),
+        7: list(range(22,27)),
+        8: list(range(27,30)),
+        9: list(range(30,32))}
+        if torch.cuda.device_count() == 10
+        else None,
+    ),
+    LlamaModelConfig(
+        model_id="llama-30B",
+        model_loc=HUGGINGFACE_MODEL_DIR / "llama-30B",
+        device_map = {0: list(range(15)), 1: list(range(15, 30)), 2: list(range(30, 45)), 4: list(range(45, 60))}
+        if torch.cuda.device_count() == 4
         else None,
     ),
     ]
@@ -340,7 +360,7 @@ def create_exps_dict() -> Tuple[
         num_prompts,
     ) in itertools.product(
         data_configs,
-        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", "llama-7B"),
+        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", "llama-7B", "llama-30B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,

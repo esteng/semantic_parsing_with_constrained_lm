@@ -11,10 +11,8 @@ import torch
 from transformers import (
     BartForConditionalGeneration,
     GPT2LMHeadModel,
-    CodeGenForCausalLM,
     PreTrainedModel,
     T5ForConditionalGeneration,
-    LlamaForCausalLM
 )
 
 from semantic_parsing_with_constrained_lm.lm import Seq2SeqSettings, Surround
@@ -27,6 +25,7 @@ from semantic_parsing_with_constrained_lm.tokenization import (
 )
 
 from semantic_parsing_with_constrained_lm.modeling_codegen import MyCodeGenForCausalLM
+from semantic_parsing_with_constrained_lm.modeling_llama import MyLlamaForCausalLM
 
 class TrainedModelNotFoundError(FileNotFoundError):
     pass
@@ -166,7 +165,7 @@ class LlamaModelConfig(ClampModelConfig):
             raise TrainedModelNotFoundError(
                 f"Model files not found in {self.model_loc}"
             )
-        model = LlamaForCausalLM.from_pretrained(self.model_loc)
+        model = MyLlamaForCausalLM.from_pretrained(self.model_loc)
         # use mixed precision 
         model.half()
 
