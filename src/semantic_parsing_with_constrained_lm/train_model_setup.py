@@ -172,8 +172,10 @@ class LlamaModelConfig(ClampModelConfig):
 
         tokenizer = LlamaClampTokenizer.from_pretrained(str(self.model_loc))
         seq2seq_settings = Seq2SeqSettings(
-            input_surround=Surround(bos=[], eos=[1], starts_with_space=True),
-            output_surround=Surround(bos=[], eos=[1], starts_with_space=True),
+            input_surround=Surround(bos=[0, 12968, 29901], eos=[13], starts_with_space=True),
+            # bos: "Human:", eos: "\n"
+            output_surround=Surround(bos=[0, 20972, 29901], eos=[13], starts_with_space=True),
+            # bos: "Computer:", eos: "\n"
             decoder_start_token_id=tokenizer.pad_token_id,
         )
         self.maybe_parallelize(model)

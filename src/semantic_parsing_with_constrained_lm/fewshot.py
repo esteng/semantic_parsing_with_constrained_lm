@@ -190,21 +190,21 @@ class PromptBuilder(Generic[TrainDatum, TestDatum]):
             "natural"
         ]
         field_to_adornment = {
-            "natural": Adornment("Human: ", "\n"),
-            "canonical": Adornment("Computer: ", ""),
+            "natural": Adornment("Human: ", "</s>"),
+            "canonical": Adornment("Computer: ", "</s>"),
         }
         if do_include_context:
-            field_to_adornment["agent_context"] = Adornment("Agent: ", "\n")
+            field_to_adornment["agent_context"] = Adornment("Agent: ", "</s>")
         return PromptBuilder(
             problem_spec=ProblemSpec(
                 input_fields=frozenset(input_field_order), output_field="canonical"
             ),
-            preamble="Let's translate what a human user says into what a computer might say.\n\n"
+            preamble="Let's translate what a human user says into what a computer might say.</s></s>"
             if use_preamble
             else None,
             input_field_order=input_field_order,
             field_to_adornment=field_to_adornment,
-            separator="\n",
+            separator="</s>",
         )
 
 

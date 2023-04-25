@@ -2,7 +2,7 @@
 
 #SBATCH -o /home/estengel/semantic_parsing_with_constrained_lm/src/semantic_parsing_with_constrained_lm/logs/eval_llama-7B_fol.out
 #SBATCH -p brtx6
-#SBATCH --gpus=1
+#SBATCH --gpus=4
 
 
 #python -m semantic_parsing_with_constrained_lm.run_exp \

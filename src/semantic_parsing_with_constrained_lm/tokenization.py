@@ -176,6 +176,7 @@ class T5ClampTokenizer(ClampTokenizer):
         spiece_model_file = f"{tmp_tokenizer_loc}/spiece.model"
         m = sentencepiece_model.ModelProto()
         m.ParseFromString(open(spiece_model_file, "rb").read())
+
         m.normalizer_spec.add_dummy_prefix = False  # pylint: disable=no-member
         m.normalizer_spec.remove_extra_whitespaces = False  # pylint: disable=no-member
         m.normalizer_spec.precompiled_charsmap = b""  # pylint: disable=no-member
@@ -187,8 +188,11 @@ class T5ClampTokenizer(ClampTokenizer):
 
         with open(spiece_model_file, "wb") as f:
             f.write(m.SerializeToString())
+            print(f"wrote to {spiece_model_file}")
+        
 
         self.tokenizer = T5Tokenizer.from_pretrained(tmp_tokenizer_loc)
+
         self.token_to_id_map = {
             k.replace("▁", " ").encode("utf-8"): v
             for k, v in self.tokenizer.get_vocab().items()
@@ -196,6 +200,7 @@ class T5ClampTokenizer(ClampTokenizer):
 
         if output_sequences is not None:
             self.update_tokenizer_with_output_sequences(output_sequences)
+
 
     def update_tokenizer_with_output_sequences(
         self, output_sequences: Iterable[str]
@@ -271,20 +276,73 @@ class T5ClampTokenizer(ClampTokenizer):
 
 class LlamaClampTokenizer(T5ClampTokenizer):
     def __init__(self, tokenizer: LlamaTokenizer):
+        """
+        `output_sequences` if provided, will be used to detect unk symbols and adding them to vocab.
+        T5 has 28 extra token ids, if we need to add more than 28 new tokens to the vocab, we need to resize the
+        token embeddings.
+        """
+        # Saving input tokenizer to a temp location so that it can be modified.
+        tmp_tokenizer_loc = tempfile.mkdtemp()
+        tokenizer.save_pretrained(tmp_tokenizer_loc)
 
+        # Modify the sentencepiece model normalizer settings to not ignore whitespaces.
+        spiece_model_file = f"{tmp_tokenizer_loc}/tokenizer.model"
+        m = sentencepiece_model.ModelProto()
+        m.ParseFromString(open(spiece_model_file, "rb").read())
 
-        self.tokenizer = tokenizer
-        self.tokenizer.add_tokens(["\n", " "])
+        m.normalizer_spec.add_dummy_prefix = False  # pylint: disable=no-member
+        m.normalizer_spec.remove_extra_whitespaces = False  # pylint: disable=no-member
+        m.normalizer_spec.precompiled_charsmap = b""  # pylint: disable=no-member
+        m.denormalizer_spec.add_dummy_prefix = False  # pylint: disable=no-member
+        m.denormalizer_spec.remove_extra_whitespaces = (  # pylint: disable=no-member
+            False
+        )
+        m.denormalizer_spec.precompiled_charsmap = b""  # pylint: disable=no-member
+
+        with open(spiece_model_file, "wb") as f:
+            f.write(m.SerializeToString())
+            print(f"wrote to {spiece_model_file}")
+        
+
+        self.tokenizer = LlamaTokenizer.from_pretrained(tmp_tokenizer_loc)
+
         self.token_to_id_map = {
             k.replace("▁", " ").encode("utf-8"): v
             for k, v in self.tokenizer.get_vocab().items()
         }
-        # reset cache 
-        del self.__dict__['id_to_utf8_token_map']
-        self.id_to_utf8_token_map
 
-        # self.id_to_utf8_token_map = {v: k for k, v in self.utf8_token_to_id_map.items()}
-        # pdb.set_trace()
+    def update_tokenizer_with_output_sequences(
+        self, output_sequences: Iterable[str]
+    ) -> None:
+        tmp_tokenizer_loc = tempfile.mkdtemp()
+        self.tokenizer.save_pretrained(tmp_tokenizer_loc)
+        spiece_model_file = f"{tmp_tokenizer_loc}/tokenizer.model"
+        m = sentencepiece_model.ModelProto()
+        m.ParseFromString(open(spiece_model_file, "rb").read())
+        t5_vocab = self.tokenizer.get_vocab()
+        # Look for unk tokens and add them to the vocab
+        unk_tokens = {
+            token
+            for output_sequence in output_sequences
+            for token in self.tokenizer.tokenize(output_sequence)
+            if token not in t5_vocab
+        }
+        if len(unk_tokens) > 0:
+            print(f"Adding unk tokens to the vocab: {unk_tokens}")
+        for token in unk_tokens:
+            new_token = sentencepiece_model.ModelProto().SentencePiece()
+            new_token.piece = token
+            new_token.score = 0
+            m.pieces.append(new_token)  # pylint: disable=no-member
+
+        with open(spiece_model_file, "wb") as f:
+            f.write(m.SerializeToString())
+
+        self.tokenizer = LlamaTokenizer.from_pretrained(tmp_tokenizer_loc)
+        self.token_to_id_map = {
+            k.replace("▁", " ").encode("utf-8"): v
+            for k, v in self.tokenizer.get_vocab().items()
+        }
 
 
     @classmethod

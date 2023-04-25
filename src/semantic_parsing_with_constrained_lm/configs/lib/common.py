@@ -30,6 +30,7 @@ from semantic_parsing_with_constrained_lm.lm import (
     IncrementalLanguageModel,
     Seq2SeqModel,
 )
+from semantic_parsing_with_constrained_lm.tokenization import GPT2ClampTokenizer, LlamaClampTokenizer
 from semantic_parsing_with_constrained_lm.model import (
     BeamSearchSemanticParser,
     ApiBeamSearchSemanticParser,
@@ -104,10 +105,16 @@ def make_semantic_parser(
 ) -> BeamSearchSemanticParser:
     decoding_setup: DecodingSetup[DatumSub, HS]
     if isinstance(lm, IncrementalLanguageModel):
-        if prompt_builder is None:
+        if prompt_builder is None and isinstance(lm.tokenizer, GPT2ClampTokenizer):
             prompt_builder = PromptBuilder.for_demo(
                 do_include_context=False, use_preamble=True
             )
+        elif prompt_builder is None and isinstance(lm.tokenizer, LlamaClampTokenizer):
+            prompt_builder = PromptBuilder.for_llama(
+                do_include_context=False, use_preamble=True
+            )
+        else:
+            pass 
         similarity_lm = (
             similarity_method.similarity_lm
             if isinstance(similarity_method, SeparateLM)

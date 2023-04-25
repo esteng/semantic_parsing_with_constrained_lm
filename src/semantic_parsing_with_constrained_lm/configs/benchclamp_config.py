@@ -54,7 +54,7 @@ from semantic_parsing_with_constrained_lm.lm_bart import Seq2SeqBart
 from semantic_parsing_with_constrained_lm.lm_gpt2 import Seq2SeqGPT2
 from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE, RUN_ON_AML
 from semantic_parsing_with_constrained_lm.run_exp import Experiment
-from semantic_parsing_with_constrained_lm.tokenization import T5ClampTokenizer
+from semantic_parsing_with_constrained_lm.tokenization import T5ClampTokenizer, LlamaClampTokenizer
 from semantic_parsing_with_constrained_lm.train_model_setup import (
     BartModelConfig,
     ClampModelConfig,
@@ -222,7 +222,7 @@ def create_train_exp(
     train_data, dev_data, _ = data_config.setup_data()
     is_encoder_decoder = not isinstance(model_config, GPT2ModelConfig)
 
-    if isinstance(tokenizer, T5ClampTokenizer):
+    if isinstance(tokenizer, T5ClampTokenizer) or isinstance(tokenizer, LlamaClampTokenizer):
         output_sequences = []
         for datum in train_data:
             if seq2seq_settings.output_surround.starts_with_space:
