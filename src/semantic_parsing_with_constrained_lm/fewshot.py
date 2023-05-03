@@ -207,6 +207,30 @@ class PromptBuilder(Generic[TrainDatum, TestDatum]):
             separator="</s>",
         )
 
+    @staticmethod
+    def for_writing(
+        do_include_context: bool, use_preamble: bool = True
+    ) -> "PromptBuilder":
+
+        input_field_order = (["agent_context"] if do_include_context else []) + [
+            "natural"
+        ]
+        field_to_adornment = {
+            "natural": Adornment("Human: ", "\n"),
+            "canonical": Adornment("Computer: ", "\n"),
+        }
+        if do_include_context:
+            field_to_adornment["agent_context"] = Adornment("Agent: ", "\n")
+        return PromptBuilder(
+            problem_spec=ProblemSpec(
+                input_fields=frozenset(input_field_order), output_field="canonical"
+            ),
+            preamble=None,
+            input_field_order=input_field_order,
+            field_to_adornment=field_to_adornment,
+            separator="\n",
+        )
+
 
 class DataRetriever(Generic[TrainDatum, TestDatum]):
     """
