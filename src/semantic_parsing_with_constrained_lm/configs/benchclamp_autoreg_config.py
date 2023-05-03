@@ -151,7 +151,7 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
     LlamaModelConfig(
         model_id="llama-30B",
         model_loc=HUGGINGFACE_MODEL_DIR / "llama-30B",
-        device_map = {0: list(range(15)), 1: list(range(15, 30)), 2: list(range(30, 45)), 4: list(range(45, 60))}
+        device_map = {0: list(range(15)), 1: list(range(15, 30)), 2: list(range(30, 45)), 3: list(range(45, 60))}
         if torch.cuda.device_count() == 4
         else None,
     ),

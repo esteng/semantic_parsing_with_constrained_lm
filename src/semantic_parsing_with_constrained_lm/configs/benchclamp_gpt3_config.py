@@ -82,8 +82,8 @@ def create_eval_exp(
     eval_data = dev_data if is_dev else test_data
 
     # truncate 
-    eval_data = eval_data[0:10]
-    test_data = test_data[0:10]
+    # eval_data = eval_data[0:10]
+    # test_data = test_data[0:10]
 
     if isinstance(data_config, BenchClampDatasetConfig):
         if data_config.dataset_name == BenchClampDataset.Overnight.value:

@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 import dataclasses
+import json
 import pdb 
 import os 
 import re
@@ -522,7 +523,7 @@ class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSu
 
         else:
             to_ret['prompt'] = prompt_prefix
-            to_ret["logprobs"] = self.beam_size,
+            to_ret["logprobs"] = self.beam_size
         return to_ret 
 
     def clean_prediction_chat(self, 
@@ -587,9 +588,16 @@ class ApiBeamSearchSemanticParser(Model[DatumSub], Generic[DatumSub, FullDatumSu
         )
         # construct API request 
         request = self.build_request(prompt_prefix, max_steps) 
+        try:
+            print(request['prompt'])
+        except KeyError:
+            print(request['messages'])
         # get response 
         response = await self.http_client.post(self.url, json=request)
-        response = response.json()
+        try:
+            response = response.json()
+        except json.decoder.JSONDecodeError:
+            response = {"choices": []}
         # clean response and return 
         results = self.clean_fxn(response)
 
