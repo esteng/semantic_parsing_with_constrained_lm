@@ -91,7 +91,6 @@ def filter_exp_dict(
         print("Cannot specify --exp-names and --exp-name-pattern together")
         return {}
 
-    # pdb.set_trace()
     if exp_name_pattern:
         exp_names = [
             name

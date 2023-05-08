@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-
+import pdb 
 import abc
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -13,6 +13,7 @@ from transformers import (
     GPT2LMHeadModel,
     PreTrainedModel,
     T5ForConditionalGeneration,
+    AutoModelForCausalLM
 )
 
 from semantic_parsing_with_constrained_lm.lm import Seq2SeqSettings, Surround
@@ -24,8 +25,9 @@ from semantic_parsing_with_constrained_lm.tokenization import (
     T5ClampTokenizer,
 )
 
-from semantic_parsing_with_constrained_lm.modeling_codegen import MyCodeGenForCausalLM
-from semantic_parsing_with_constrained_lm.modeling_llama import MyLlamaForCausalLM
+from semantic_parsing_with_constrained_lm.modeling.modeling_codegen import MyCodeGenForCausalLM
+from semantic_parsing_with_constrained_lm.modeling.modeling_llama import MyLlamaForCausalLM
+from semantic_parsing_with_constrained_lm.modeling.modeling_gpt_bigcode import MyGPTBigCodeForCausalLM
 
 class TrainedModelNotFoundError(FileNotFoundError):
     pass
@@ -170,6 +172,28 @@ class LlamaModelConfig(ClampModelConfig):
         model.half()
 
         tokenizer = LlamaClampTokenizer.from_pretrained(str(self.model_loc))
+        seq2seq_settings = Seq2SeqSettings(
+            input_surround=Surround(bos=[0, 12968, 29901], eos=[13], starts_with_space=True),
+            # bos: "Human:", eos: "\n"
+            output_surround=Surround(bos=[0, 20972, 29901], eos=[13], starts_with_space=True),
+            # bos: "Computer:", eos: "\n"
+            decoder_start_token_id=tokenizer.pad_token_id,
+        )
+        self.maybe_parallelize(model)
+        model.eval()
+        return model, tokenizer, seq2seq_settings
+
+class StarCoderModelConfig(ClampModelConfig):
+    def setup_model(self) -> Tuple[PreTrainedModel, ClampTokenizer, Seq2SeqSettings]:
+        if not self.model_loc.exists():
+            raise TrainedModelNotFoundError(
+                f"Model files not found in {self.model_loc}"
+            )
+        model = MyGPTBigCodeForCausalLM.from_pretrained(self.model_loc)
+        # use mixed precision 
+        model.half()
+
+        tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))
         seq2seq_settings = Seq2SeqSettings(
             input_surround=Surround(bos=[0, 12968, 29901], eos=[13], starts_with_space=True),
             # bos: "Human:", eos: "\n"

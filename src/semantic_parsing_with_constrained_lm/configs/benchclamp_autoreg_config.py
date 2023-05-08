@@ -61,6 +61,7 @@ from semantic_parsing_with_constrained_lm.train_model_setup import (
     GPT2ModelConfig,
     T5ModelConfig,
     LlamaModelConfig,
+    StarCoderModelConfig,
 )
 from semantic_parsing_with_constrained_lm.configs.benchclamp_config import HUGGINGFACE_MODEL_DIR
 
@@ -155,6 +156,14 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         if torch.cuda.device_count() == 4
         else None,
     ),
+    StarCoderModelConfig(
+        model_id='starcoder-15B',
+        model_loc=HUGGINGFACE_MODEL_DIR / "starcoder-15B",
+        device_map={0: list(range(9)), 1: list(range(9, 17)), 2: list(range(17, 26)), 3: list(range(26, 34))}
+        if torch.cuda.device_count() == 4
+        else None,
+    )
+
     ]
 
 def get_zero_one_ratio(exp_name):
@@ -180,7 +189,6 @@ def create_eval_exp(
 
     train_data, dev_data, test_data = data_config.setup_data()
     # lm = IncrementalOpenAIGPT3(engine=open_ai_model_name)
-
     model, tokenizer, _ = model_config.setup_model()
     data_config.tokenizer = tokenizer
     train_data, dev_data, test_data = data_config.setup_data()
@@ -360,7 +368,7 @@ def create_exps_dict() -> Tuple[
         num_prompts,
     ) in itertools.product(
         data_configs,
-        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", "llama-7B", "llama-30B"),
+        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", "llama-7B", "llama-30B", "starcoder-15B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,
