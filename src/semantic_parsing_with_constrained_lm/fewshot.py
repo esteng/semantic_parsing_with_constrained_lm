@@ -206,6 +206,31 @@ class PromptBuilder(Generic[TrainDatum, TestDatum]):
             field_to_adornment=field_to_adornment,
             separator="</s>",
         )
+    
+    @staticmethod
+    def for_starcoder(
+        do_include_context: bool, use_preamble: bool = True
+    ) -> "PromptBuilder":
+        input_field_order = (["agent_context"] if do_include_context else []) + [
+            "natural"
+        ]
+        field_to_adornment = {
+            "natural": Adornment("Human: ", "\n\n\n\n\n\n\n"),
+            "canonical": Adornment("Computer: ", "\n\n\n\n\n\n\n"),
+        }
+        if do_include_context:
+            field_to_adornment["agent_context"] = Adornment("Agent: ", "\n\n\n\n\n\n\n")
+        return PromptBuilder(
+            problem_spec=ProblemSpec(
+                input_fields=frozenset(input_field_order), output_field="canonical"
+            ),
+            preamble="Let's translate what a human user says into what a computer might say.\n"
+            if use_preamble
+            else None,
+            input_field_order=input_field_order,
+            field_to_adornment=field_to_adornment,
+            separator="\n\n\n\n\n\n\n",
+        )
 
     @staticmethod
     def for_writing(

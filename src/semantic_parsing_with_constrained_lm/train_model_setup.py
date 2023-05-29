@@ -20,6 +20,7 @@ from semantic_parsing_with_constrained_lm.lm import Seq2SeqSettings, Surround
 from semantic_parsing_with_constrained_lm.tokenization import (
     ClampTokenizer,
     GPT2ClampTokenizer,
+    StarCoderClampTokenizer,
     LlamaClampTokenizer,
     BartClampTokenizer,
     T5ClampTokenizer,
@@ -173,9 +174,9 @@ class LlamaModelConfig(ClampModelConfig):
 
         tokenizer = LlamaClampTokenizer.from_pretrained(str(self.model_loc))
         seq2seq_settings = Seq2SeqSettings(
-            input_surround=Surround(bos=[0, 12968, 29901], eos=[13], starts_with_space=True),
+            input_surround=Surround(bos=[1, 12968, 29901], eos=[13], starts_with_space=True),
             # bos: "Human:", eos: "\n"
-            output_surround=Surround(bos=[0, 20972, 29901], eos=[13], starts_with_space=True),
+            output_surround=Surround(bos=[1, 20972, 29901], eos=[13], starts_with_space=True),
             # bos: "Computer:", eos: "\n"
             decoder_start_token_id=tokenizer.pad_token_id,
         )
@@ -191,14 +192,15 @@ class StarCoderModelConfig(ClampModelConfig):
             )
         model = MyGPTBigCodeForCausalLM.from_pretrained(self.model_loc)
         # use mixed precision 
-        model.half()
+        # model.half()
 
-        tokenizer = GPT2ClampTokenizer.from_pretrained(str(self.model_loc))
+        tokenizer = StarCoderClampTokenizer.from_pretrained(str(self.model_loc))
+        # pdb.set_trace()
         seq2seq_settings = Seq2SeqSettings(
-            input_surround=Surround(bos=[0, 12968, 29901], eos=[13], starts_with_space=True),
-            # bos: "Human:", eos: "\n"
-            output_surround=Surround(bos=[0, 20972, 29901], eos=[13], starts_with_space=True),
-            # bos: "Computer:", eos: "\n"
+            input_surround=Surround(bos=[21390, 44], eos=[36394], starts_with_space=True),
+            # bos: "Human:", eos: "\n\n\n\n\n\n\n"
+            output_surround=Surround(bos=[18664, 44], eos=[36394], starts_with_space=True),
+            # bos: "Computer:", eos: "\n\n\n\n\n\n\n"
             decoder_start_token_id=tokenizer.pad_token_id,
         )
         self.maybe_parallelize(model)

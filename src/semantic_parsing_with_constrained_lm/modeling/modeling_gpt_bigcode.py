@@ -23,7 +23,9 @@ from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from transformers.activations import ACT2FN
 from transformers.modeling_outputs import (
     BaseModelOutputWithPastAndCrossAttentions,
+    BaseModelOutputWithPast,
     CausalLMOutputWithCrossAttentions,
+    CausalLMOutputWithPast,
     SequenceClassifierOutputWithPast,
     TokenClassifierOutput,
 )
@@ -44,7 +46,6 @@ from transformers.models.gpt_bigcode.modeling_gpt_bigcode import (
     GPTBigCodeAttention,
     GPTBigCodeMLP,
     GPTBigCodeBlock,
-
 )
 
 
@@ -57,6 +58,8 @@ GPT_BIGCODE_PRETRAINED_MODEL_ARCHIVE_LIST = [
     "bigcode/gpt_bigcode-santacoder",
     # See all GPTBigCode models at https://huggingface.co/models?filter=gpt_bigcode
 ]
+
+
 
 
 class MyGPTBigCodePreTrainedModel(PreTrainedModel):
@@ -220,6 +223,7 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
 
         self.model_parallel = False 
         self.device_map = None
+        self.first_device = "cpu"
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -233,6 +237,8 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
         self.model_parallel = True
         self.first_device = "cpu" if "cpu" in self.device_map.keys() else "cuda:" + str(min(self.device_map.keys()))
         self.last_device = "cuda:" + str(max(self.device_map.keys()))
+        self.wpe = self.wpe.to(self.first_device)
+        print(f"Moving self.wte to {self.first_device}")
         self.wte = self.wte.to(self.first_device)
         # Load onto devices
         for k, v in self.device_map.items():
@@ -249,6 +255,7 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
         self.first_device = "cpu"
         self.last_device = "cpu"
         self.wte = self.wte.to("cpu")
+        self.wpe = self.wpe.to("cpu")
         for index in range(len(self.h)):
             self.h[index] = self.h[index].to("cpu")
         self.ln_f = self.ln_f.to("cpu")
@@ -264,7 +271,7 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
     @add_start_docstrings_to_model_forward(GPT_BIGCODE_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=BaseModelOutputWithPastAndCrossAttentions,
+        output_type=BaseModelOutputWithPast,
         config_class=_CONFIG_FOR_DOC,
     )
     def forward(
@@ -282,7 +289,7 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple, BaseModelOutputWithPastAndCrossAttentions]:
+    ) -> Union[Tuple, BaseModelOutputWithPast]:
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
             output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states
@@ -364,6 +371,8 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
 
         if inputs_embeds is None:
             inputs_embeds = self.wte(input_ids)
+
+        position_ids = position_ids.to(input_ids.device)
         position_embeds = self.wpe(position_ids)
         hidden_states = inputs_embeds + position_embeds
 
@@ -385,7 +394,9 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
                 torch.cuda.set_device(hidden_states.device)
                 # Ensure layer_past is on same device as hidden_states (might not be correct)
                 if layer_past is not None:
-                    layer_past = tuple(past_state.to(hidden_states.device) for past_state in layer_past)
+                    # layer_past = tuple(past_state.to(hidden_states.device) for past_state in layer_past)
+                    layer_past = layer_past.to(hidden_states.device)
+
                 # Ensure that attention_mask is always on the same device as hidden_states
                 if attention_mask is not None:
                     attention_mask = attention_mask.to(hidden_states.device)
@@ -413,21 +424,25 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
                     encoder_attention_mask,
                 )
             else:
+                if layer_past is not None and len(layer_past.shape) == 4 and layer_past.shape[1] == 1:
+                    layer_past = layer_past.squeeze(1)
+
                 outputs = block(
-                    hidden_states,
-                    layer_past=layer_past,
-                    attention_mask=attention_mask,
-                    head_mask=head_mask[i],
-                    encoder_hidden_states=encoder_hidden_states,
-                    encoder_attention_mask=encoder_attention_mask,
-                    use_cache=use_cache,
-                    output_attentions=output_attentions,
+                hidden_states,
+                layer_past=layer_past,
+                attention_mask=attention_mask,
+                head_mask=head_mask[i],
+                encoder_hidden_states=encoder_hidden_states,
+                encoder_attention_mask=encoder_attention_mask,
+                use_cache=use_cache,
+                output_attentions=output_attentions,
                 )
 
 
             hidden_states = outputs[0]
             if use_cache:
                 presents.append(outputs[1])
+                # presents = presents + (outputs[1],)
 
             if output_attentions:
                 all_self_attentions = all_self_attentions + (outputs[2 if use_cache else 1],)
@@ -454,12 +469,11 @@ class MyGPTBigCodeModel(MyGPTBigCodePreTrainedModel):
                 if v is not None
             )
 
-        return BaseModelOutputWithPastAndCrossAttentions(
+        return BaseModelOutputWithPast(
             last_hidden_state=hidden_states,
             past_key_values=presents,
             hidden_states=all_hidden_states,
             attentions=all_self_attentions,
-            cross_attentions=all_cross_attentions,
         )
 
 
@@ -479,6 +493,7 @@ class MyGPTBigCodeForCausalLM(MyGPTBigCodePreTrainedModel):
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
         self.model_parallel = False 
         self.device_map = None
+        self.first_device = "cpu"
 
         # Initialize weights and apply final processing
         self.post_init()
@@ -491,7 +506,8 @@ class MyGPTBigCodeForCausalLM(MyGPTBigCodePreTrainedModel):
         )
         assert_device_map(self.device_map, len(self.transformer.h))
         self.transformer.parallelize(self.device_map)
-        self.lm_head = self.lm_head.to(self.transformer.first_device)
+        self.first_device = self.transformer.first_device
+        self.lm_head = self.lm_head.to(self.first_device)
         self.model_parallel = True
 
     def deparallelize(self):
@@ -547,7 +563,7 @@ class MyGPTBigCodeForCausalLM(MyGPTBigCodePreTrainedModel):
     @add_start_docstrings_to_model_forward(GPT_BIGCODE_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
         checkpoint=_CHECKPOINT_FOR_DOC,
-        output_type=CausalLMOutputWithCrossAttentions,
+        output_type=CausalLMOutputWithPast,
         config_class=_CONFIG_FOR_DOC,
     )
     def forward(
@@ -566,7 +582,7 @@ class MyGPTBigCodeForCausalLM(MyGPTBigCodePreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[Tuple, CausalLMOutputWithCrossAttentions]:
+    ) -> Union[Tuple, CausalLMOutputWithPast]:
         r"""
         labels (`torch.Tensor` of shape `(batch_size, sequence_length)`, *optional*):
             Labels for language modeling. Note that the labels **are shifted** inside the model, i.e. you can set
@@ -591,6 +607,7 @@ class MyGPTBigCodeForCausalLM(MyGPTBigCodePreTrainedModel):
             return_dict=return_dict,
         )
         hidden_states = transformer_outputs[0]
+        hidden_states = hidden_states.to(self.first_device)
 
         lm_logits = self.lm_head(hidden_states)
 
@@ -607,13 +624,12 @@ class MyGPTBigCodeForCausalLM(MyGPTBigCodePreTrainedModel):
             output = (lm_logits,) + transformer_outputs[1:]
             return ((loss,) + output) if loss is not None else output
 
-        return CausalLMOutputWithCrossAttentions(
+        return CausalLMOutputWithPast(
             loss=loss,
             logits=lm_logits,
             past_key_values=transformer_outputs.past_key_values,
             hidden_states=transformer_outputs.hidden_states,
             attentions=transformer_outputs.attentions,
-            cross_attentions=transformer_outputs.cross_attentions,
         )
 
     @staticmethod
