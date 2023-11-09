@@ -1,6 +1,6 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
-
+import pdb 
 import dataclasses
 import os
 from dataclasses import dataclass
@@ -18,6 +18,7 @@ from semantic_parsing_with_constrained_lm.lm import (
     Seq2SeqModel,
 )
 from semantic_parsing_with_constrained_lm.tokenization import ClampTokenizer
+from semantic_parsing_with_constrained_lm.modeling.modeling_gpt_bigcode import MyGPTBigCodeForCausalLM, MyGPTBigCodePreTrainedModel
 
 
 @dataclass
@@ -72,8 +73,14 @@ class GPT2BatchMaker(BatchMaker):
         self, args: List[Tuple[Sequence[int], Optional[GPT2State]]]
     ) -> Tuple[torch.Tensor, List[GPT2State]]:
         tokens, _ = cast(Tuple[Sequence[Sequence[int]], Any], zip(*args))
+
+        if hasattr(self.model, "first_device"):
+            device = self.model.first_device
+        else:
+            device = self.model.device
+
         input_ids = torch.tensor(
-            list(tokens), dtype=torch.long, device=self.model.device
+            list(tokens), dtype=torch.long, device=device 
         )
 
         model_outputs = self.model(input_ids)
@@ -107,42 +114,79 @@ class GPT2BatchMaker(BatchMaker):
         assert not any(hs is None for hs in hidden_states)
         hidden_states = cast(Sequence[GPT2State], hidden_states)
 
-        input_ids = torch.tensor(
-            list(tokens), dtype=torch.long, device=self.model.device
-        )
-        past_key_values = tuple(
-            tuple(
-                torch.stack(
-                    [
-                        hidden_state.past_key_values[layer_i][kv_i]
-                        for hidden_state in hidden_states
-                    ]
-                )
-                for kv_i in range(2)
-            )
-            for layer_i in range(len(hidden_states[0].past_key_values))
-        )
+        if hasattr(self.model, "first_device"):
+            device = self.model.first_device
+        else:
+            device = self.model.device
 
+
+        input_ids = torch.tensor(
+            list(tokens), dtype=torch.long, device=device
+        )
+        if isinstance(self.model, MyGPTBigCodeForCausalLM):
+            past_key_values = [
+                torch.stack(
+                        [
+                            hidden_state.past_key_values[layer_i][0].unsqueeze(0)
+                            for hidden_state in hidden_states
+                        ]
+                )
+                for layer_i in range(len(hidden_states[0].past_key_values))
+            ]
+        else:
+            past_key_values = tuple(
+            tuple(
+                    torch.stack(
+                        [
+                            hidden_state.past_key_values[layer_i][kv_i]
+                            for hidden_state in hidden_states
+                        ]
+                    )
+                    for kv_i in range(2)
+                )
+                for layer_i in range(len(hidden_states[0].past_key_values))
+            )
         model_outputs = self.model(input_ids=input_ids, past_key_values=past_key_values)
         logprobs = F.log_softmax(model_outputs["logits"], dim=-1)
 
-        next_hidden_states = [
-            GPT2State(
-                past_hidden_state.prev_tokens + tuple(tokens[i]),
-                tuple(
-                    cast(
-                        Tuple[torch.Tensor, torch.Tensor],
-                        tuple(
-                            past_key_values_internal[i]
-                            for past_key_values_internal in past_key_values_for_layer
-                        ),
-                    )
-                    for past_key_values_for_layer in model_outputs["past_key_values"]
-                ),
-                logprobs[i, -1],
-            )
-            for i, past_hidden_state in enumerate(hidden_states)
-        ]
+        if isinstance(self.model, MyGPTBigCodeForCausalLM):
+            # List[torch.Tensor]
+            next_hidden_states = [
+                GPT2State(
+                    past_hidden_state.prev_tokens + tuple(tokens[i]),
+                    [
+                        past_key_values_for_layer[i]
+                        # torch.stack(
+                        #     [
+                        #         past_key_values_internal[i]
+                        #         for past_key_values_internal in past_key_values_for_layer
+                        #     ]
+                        # )
+                        for past_key_values_for_layer in model_outputs["past_key_values"]
+                    ],
+                    logprobs[i, -1],
+                )
+                for i, past_hidden_state in enumerate(hidden_states)
+            ]
+        else:
+            # Tuple[Tuple[torch.Tensor]]
+            next_hidden_states = [
+                GPT2State(
+                    past_hidden_state.prev_tokens + tuple(tokens[i]),
+                    tuple(
+                        cast(
+                            Tuple[torch.Tensor, torch.Tensor],
+                            tuple(
+                                past_key_values_internal[i]
+                                for past_key_values_internal in past_key_values_for_layer
+                            ),
+                        )
+                        for past_key_values_for_layer in model_outputs["past_key_values"]
+                    ),
+                    logprobs[i, -1],
+                )
+                for i, past_hidden_state in enumerate(hidden_states)
+            ]
         return logprobs, next_hidden_states
 
 
@@ -260,4 +304,80 @@ class Seq2SeqGPT2(Seq2SeqModel[GPT2State]):
 
     async def next_logprobs(self, hidden_state: GPT2State) -> torch.Tensor:
         return hidden_state.last_logprobs
+
+
+# @dataclass
+# class Seq2SeqGPT2NoHidden(Seq2SeqModel[GPT2State]):
+#     """Useful for using GPT-2 as a fine-tuned seq2seq model.
+#     Don't use hidden state ."""
+
+#     pretrained_model_dir: str
+#     model: PreTrainedModel
+#     clamp_tokenizer: ClampTokenizer
+#     incremental_model: IncrementalGPT2 = dataclasses.field(init=False)
+#     seq2seq_helper: Seq2SeqHelper = dataclasses.field(init=False)
+
+#     def __post_init__(self):
+#         self.incremental_model = IncrementalGPT2(
+#             pretrained_model_dir=self.pretrained_model_dir,
+#             model=self.model,
+#             clamp_tokenizer=self.clamp_tokenizer,
+#         )
+#         with open(
+#             os.path.join(self.pretrained_model_dir, "seq2seq_settings.json")
+#         ) as settings_f:
+#             self.seq2seq_helper = Seq2SeqHelper.from_settings_json(
+#                 settings_f.read(), self.incremental_model.tokenizer
+#             )
+
+#     @cached_property
+#     def vocab_size(self) -> int:  # pylint: disable=invalid-overridden-method
+#         return self.incremental_model.vocab_size
+
+#     @cached_property
+#     def tokenizer(self) -> ClampTokenizer:  # pylint: disable=invalid-overridden-method
+#         return self.clamp_tokenizer
+
+#     @property
+#     def decoder_bos_ids(self) -> List[int]:
+#         return self.seq2seq_helper.decoder_start_token_ids
+
+#     @property
+#     def decoder_eos_id(self) -> int:
+#         return self.seq2seq_helper.decoder_eos_token_id
+
+#     def encode_for_encoder(self, s: str) -> List[int]:
+#         return self.seq2seq_helper.encode_for_encoder(s)
+
+#     def encode_prefix_for_decoder(
+#         self, s: str, include_bos_ids: bool = True
+#     ) -> List[int]:
+#         return self.seq2seq_helper.encode_prefix_for_decoder(s, include_bos_ids)
+
+#     def decode_output(self, ids: Sequence[int]) -> str:
+#         return self.seq2seq_helper.decode_output(ids)
+
+#     async def initial(
+#         self,
+#         encoder_tokens: Sequence[int],
+#         decoder_tokens: Sequence[int],
+#         drop_next_hidden_state: bool = False,
+#     ) -> Tuple[torch.Tensor, Optional[GPT2State]]:
+#         logprobs, hidden_state = await self.incremental_model.execute(
+#             tuple(encoder_tokens) + tuple(decoder_tokens), None, drop_next_hidden_state
+#         )
+#         return logprobs[len(encoder_tokens) :], hidden_state
+
+#     async def extend(
+#         self,
+#         tokens: Sequence[int],
+#         hidden_state: GPT2State,
+#         drop_next_hidden_state: bool = False,
+#     ) -> Tuple[torch.Tensor, Optional[GPT2State]]:
+#         return await self.incremental_model.execute(
+#             tokens, hidden_state, drop_next_hidden_state
+#         )
+
+#     async def next_logprobs(self, hidden_state: GPT2State) -> torch.Tensor:
+#         return hidden_state.last_logprobs
 

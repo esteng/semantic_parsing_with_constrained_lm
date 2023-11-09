@@ -14,10 +14,10 @@ from typing import Optional
 import logging 
 import jsons 
 
-from semantic_parsing_with_constrained_lm.tokenization import GPT2ClampTokenizer
+from semantic_parsing_with_constrained_lm.tokenization import GPT2ClampTokenizer, LlamaClampTokenizer
 from semantic_parsing_with_constrained_lm.datum import BenchClampDatum, FullDatum
 from semantic_parsing_with_constrained_lm.configs.lib.common import BM25Retriever, TruncateTokenLength
-from semantic_parsing_with_constrained_lm.modeling_codegen import MyCodeGenForCausalLM
+from semantic_parsing_with_constrained_lm.modeling import MyCodeGenForCausalLM, MyLlamaForCausalLM
 from semantic_parsing_with_constrained_lm.text_to_lispress import ModelArguments, DataTrainingArguments
 from semantic_parsing_with_constrained_lm.fewshot import PromptBuilder
 from semantic_parsing_with_constrained_lm.index.exact_match_index import LampGenerator
@@ -114,9 +114,14 @@ async def main():
 
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    tokenizer  = GPT2ClampTokenizer.from_pretrained(model_args.model_name_or_path)
 
-    model = MyCodeGenForCausalLM.from_pretrained(model_args.model_name_or_path)
+    if model_args.model_name_or_path.startswith("codegen"):
+        tokenizer  = GPT2ClampTokenizer.from_pretrained(model_args.model_name_or_path)
+        model = MyCodeGenForCausalLM.from_pretrained(model_args.model_name_or_path)
+    elif "llama" in model_args.model_name_or_path or "vicuna" in model_args.model_name_or_path:
+        tokenizer  = LlamaClampTokenizer.from_pretrained(model_args.model_name_or_path)
+        model = MyLlamaForCausalLM.from_pretrained(model_args.model_name_or_path)
+
     # maybe parallelize 
     if Path(model_args.model_name_or_path).stem == "codegen-350M" and torch.cuda.device_count() == 2:
         device_map = {0: list(range(16)),
@@ -153,6 +158,14 @@ async def main():
                     1: list(range(9, 17)), 
                     2: list(range(17, 26)), 
                     3: list(range(26, 34))}
+        model.half()
+        model.parallelize(device_map)
+
+    elif Path(model_args.model_name_or_path).stem in ["llama-13B", "vicuna-13B"]:
+        device_map={0: list(range(10)), 
+                    1: list(range(10, 20)), 
+                    2: list(range(20, 30)), 
+                    3: list(range(30, 40))}
         model.half()
         model.parallelize(device_map)
 

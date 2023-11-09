@@ -137,6 +137,14 @@ class GPT2ClampTokenizer(ClampTokenizer):
             tokenizer=GPT2Tokenizer.from_pretrained(tokenizer_loc)
         )
 
+class StarCoderClampTokenizer(GPT2ClampTokenizer):
+    @classmethod
+    def from_pretrained(cls, tokenizer_loc: str) -> "StarCoderClampTokenizer":
+        return StarCoderClampTokenizer(
+            tokenizer=GPT2Tokenizer.from_pretrained(tokenizer_loc)
+        )
+
+
 class BartClampTokenizer(GPT2ClampTokenizer):
     def __init__(self, tokenizer: BartTokenizer):
         super().__init__(tokenizer=tokenizer)

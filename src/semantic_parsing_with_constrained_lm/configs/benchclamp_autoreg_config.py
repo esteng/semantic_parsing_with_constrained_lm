@@ -156,10 +156,31 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         if torch.cuda.device_count() == 4
         else None,
     ),
+    LlamaModelConfig(
+        model_id="llama-13B",
+        model_loc=HUGGINGFACE_MODEL_DIR / "llama-13B",
+        device_map = {0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
+        if torch.cuda.device_count() == 4
+        else None,
+    ),
+    LlamaModelConfig(
+        model_id="vicuna-13B",
+        model_loc=HUGGINGFACE_MODEL_DIR / "vicuna-13B",
+        device_map = {0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
+        if torch.cuda.device_count() == 4
+        else None,
+    ),
     StarCoderModelConfig(
         model_id='starcoder-15B',
         model_loc=HUGGINGFACE_MODEL_DIR / "starcoder-15B",
-        device_map={0: list(range(9)), 1: list(range(9, 17)), 2: list(range(17, 26)), 3: list(range(26, 34))}
+        device_map={0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
+        if torch.cuda.device_count() == 4
+        else None,
+    ),
+    StarCoderModelConfig(
+        model_id='santacoder-1B',
+        model_loc=HUGGINGFACE_MODEL_DIR / "santacoder-1B",
+        device_map={0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
         if torch.cuda.device_count() == 4
         else None,
     )
@@ -368,7 +389,9 @@ def create_exps_dict() -> Tuple[
         num_prompts,
     ) in itertools.product(
         data_configs,
-        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", "llama-7B", "llama-30B", "starcoder-15B"),
+        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", 
+         "llama-7B", "llama-13B", "llama-30B", "starcoder-15B", 
+         "santacoder-1B", "vicuna-13B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,
