@@ -19,7 +19,7 @@ from semantic_parsing_with_constrained_lm.domains.lispress_v2.sequence_creator i
 )
 from semantic_parsing_with_constrained_lm.domains.sql.sequence_creator import CoSqlUtterance
 from semantic_parsing_with_constrained_lm.domains.sql.sql_datum import SqlDatum
-from semantic_parsing_with_constrained_lm.paths import BENCH_CLAMP_PROCESSED_DATA_DIR_AZURE, BENCH_CLAMP_PROCESSED_DATA_DIR
+from semantic_parsing_with_constrained_lm.paths import BENCH_CLAMP_PROCESSED_DATA_DIR_AZURE, BENCH_CLAMP_PROCESSED_DATA_DIR, BENCH_CLAMP_MACRO_TRAIN_DIR
 from semantic_parsing_with_constrained_lm.sequence_creator import (
     IdentitySequenceCreator,
     SequenceCreator,
@@ -96,6 +96,7 @@ class BenchClampDatasetConfig(ClampDataConfig):
         domain_str = self.domain + "/" if self.domain is not None else ""
         if "low" in self.split_name:
             dev_data_suffix = "low"
+
         elif "all" in self.split_name and "converted" not in self.split_name and "lower" not in self.split_name:
             dev_data_suffix = "all" 
         elif "all_converted" in self.split_name:
@@ -110,13 +111,14 @@ class BenchClampDatasetConfig(ClampDataConfig):
             # dev_data_suffix = "medium"
             dev_data_suffix = self.split_name
 
-        train_suffix = ''
+        train_suffix = '_all'
         if "fewshot" in self.dataset_name:
             # if running a fewshot experiment, use big train file with all possible strings 
             train_suffix = "_eval"
             # self.dataset_name = re.sub("_fewshot", "", self.dataset_name)
         
-        train_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}train{train_suffix}.jsonl"
+        refactored_train_data_file = f"{BENCH_CLAMP_MACRO_TRAIN_DIR}/{domain_str}train{train_suffix}_refactored.jsonl"
+        original_train_data_file = f"{BENCH_CLAMP_MACRO_TRAIN_DIR}/{domain_str}train{train_suffix}.jsonl"
         dev_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}dev.jsonl"
         if self.eval_on_full_test:
             test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
@@ -124,9 +126,12 @@ class BenchClampDatasetConfig(ClampDataConfig):
             # test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
             test_data_file = f"{BENCH_CLAMP_PROCESSED_DATA_DIR}/{self.dataset_name}/{domain_str}test.jsonl"
 
-        with BlobFile(str(train_data_file)) as bf:
-            print(f"Reading {train_data_file}")
-            train_data = data_from_textio(bf)
+        with BlobFile(str(refactored_train_data_file)) as bf:
+            print(f"Reading {refactored_train_data_file}")
+            refactored_train_data = data_from_textio(bf)
+        with BlobFile(str(original_train_data_file)) as bf:
+            print(f"Reading {original_train_data_file}")
+            original_train_data = data_from_textio(bf)
         with BlobFile(str(dev_data_file)) as bf:
             print(f"Reading {dev_data_file}")
             dev_data = data_from_textio(bf)
@@ -134,9 +139,10 @@ class BenchClampDatasetConfig(ClampDataConfig):
             print(f"Reading {test_data_file}")
             test_data = data_from_textio(bf)
         if self.merge_train_and_dev:
-            train_data.extend(dev_data)
+            original_train_data.extend(dev_data)
         return (
-            self.modify_data_with_sequence_creator(train_data),
+            self.modify_data_with_sequence_creator(refactored_train_data),
+            self.modify_data_with_sequence_creator(original_train_data),
             self.modify_data_with_sequence_creator(dev_data),
             self.modify_data_with_sequence_creator(test_data),
         )

@@ -69,7 +69,10 @@ class ClampTokenizer(ABC):
         return {v: k for k, v in self.utf8_token_to_id_map.items()}
 
     def encode(self, text: str) -> List[int]:
-        tokens = self.tokenize(text)
+        try:
+            tokens = self.tokenize(text)
+        except KeyError:
+            pdb.set_trace()
         return [self.utf8_token_to_id_map[token] for token in tokens]
 
     def decode(self, token_ids: List[int]) -> str:

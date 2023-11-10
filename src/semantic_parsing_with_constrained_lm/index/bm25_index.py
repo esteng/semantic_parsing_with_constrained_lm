@@ -14,7 +14,6 @@ from semantic_parsing_with_constrained_lm.datum import DatumSub, FullDatumSub
 from semantic_parsing_with_constrained_lm.index import Candidate, DynamicIndex, Query
 from semantic_parsing_with_constrained_lm.model import DataRetriever
 
-from ambiguous_parsing.generation.fixtures.nps import NPS_MAP, VISUAL_INSTRUMENT_NPS
 
 class PromptSchema(SchemaClass):
     text = TEXT()
@@ -114,6 +113,94 @@ class BM25Retriever(DataRetriever[FullDatumSub, DatumSub]):
             ],  # score discarded
         )
         return results
+    
+
+class DualBM25Retriever(DataRetriever[FullDatumSub, DatumSub]): 
+    """Retriever for program_refactoring. Retrieves some examples from one set of data, other examples from another."""
+    def __init__(
+        self,
+        train_data_refactored: Sequence[FullDatumSub],
+        train_data_original: Sequence[FullDatumSub],
+        perc_refactored: float = 0.5, 
+        top_k: int = 20,
+        best_first: bool = True,
+        seed: int = 12345,
+    ):
+        self.refactored_index: BM25Index[DatumSub, FullDatumSub] = BM25Index.create(
+            train_data_refactored,
+            get_content=lambda c: c.natural,  # type: ignore
+            get_query=lambda q: q.natural,  # type: ignore
+        )
+        self.original_index: BM25Index[DatumSub, FullDatumSub] = BM25Index.create(
+            train_data_refactored,
+            get_content=lambda c: c.natural,  # type: ignore
+            get_query=lambda q: q.natural,  # type: ignore
+        )
+        self.refactored_data: List[FullDatumSub] = list(train_data_refactored)
+        self.original_data: List[FullDatumSub] = list(train_data_original)
+
+        top_k_refactored = int(perc_refactored * top_k)
+        top_k_original = top_k - top_k_refactored
+        self.top_k_refactored = top_k_refactored
+        self.top_k_original = top_k_original
+
+        self.best_first = best_first
+        self.prng = random.Random(
+            seed
+        )  # a random number generator to ensure deterministic behavior
+
+    def augment_with_random_samples(
+        self, data: Sequence[FullDatumSub], retrieved_keys: Sequence[int], key: str,
+    ) -> Sequence[FullDatumSub]:
+
+        if key == "refactored":
+            top_k = self.top_k_refactored
+        else:
+            top_k = self.top_k_original
+
+        if len(retrieved_keys) < top_k:
+            print(
+                f"Could not retrieve {top_k} examples for key {key}, got only {len(retrieved_keys)}"
+            )
+            keys_to_sample = sorted(set(range(len(data))).difference(retrieved_keys))
+            sampled_keys = self.prng.sample(
+                keys_to_sample,
+                k=min(top_k - len(retrieved_keys), len(keys_to_sample)),
+            )
+            augmented_keys = list(retrieved_keys) + list(sampled_keys)
+            print(f"Added samples to make it of size {len(augmented_keys)}")
+            items = [data[k] for k in augmented_keys[: top_k]]
+        else:
+            items = [data[k] for k in retrieved_keys[: top_k]]
+
+        return items if self.best_first else list(reversed(items))
+
+    def add(self, data: Sequence[FullDatumSub], index_name):
+        if index_name == "original":
+            self.original_index.add(data)
+            self.original_data.extend(data)
+        else:
+            self.refactored_index.add(data)
+            self.refactored_data.extend(data)
+
+    async def __call__(self, test_datum: DatumSub) -> Sequence[FullDatumSub]:
+        refactored_results = self.augment_with_random_samples(
+            data=self.refactored_data,
+            retrieved_keys=[
+                key for key, _ in self.refactored_index.search(test_datum, top_k=self.top_k_refactored)
+            ],  # score discarded
+            key = "refactored"
+        )
+        original_results = self.augment_with_random_samples(
+            data=self.original_data,
+            retrieved_keys=[
+                key for key, _ in self.original_index.search(test_datum, top_k=self.top_k_original)
+            ],  # score discarded
+            key = "original"
+        )
+
+        return refactored_results + original_results
+
 
 class LampBM25Retriever(BM25Retriever):
     def __init__(

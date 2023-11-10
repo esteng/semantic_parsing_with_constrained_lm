@@ -26,7 +26,7 @@ CLAMP_PRETRAINED_MODEL_DIR = Path(os.environ.get("TRANSFORMERS_CACHE", "huggingf
 # CLAMP_DATA_DIR = (
     # Path("/mnt/default/clamp_data/") if RUN_ON_AML else Path("data")
 # )
-CLAMP_DATA_DIR = Path("data")
+CLAMP_DATA_DIR = Path("/nas-ssd2/esteng/program_refactoring/calflow_data")
 
 OVERNIGHT_DATA_DIR = CLAMP_DATA_DIR / "overnight"
 
@@ -35,6 +35,8 @@ BENCH_CLAMP_DATA_DIR_ROOT = CLAMP_DATA_DIR
 
 
 BENCH_CLAMP_RAW_DATA_DIR = BENCH_CLAMP_DATA_DIR_ROOT / "raw"
+
+BENCH_CLAMP_MACRO_TRAIN_DIR = os.environ.get("BENCH_CLAMP_MACRO_TRAIN_DIR", None)
 
 BENCH_CLAMP_PROCESSED_DATA_DIR = BENCH_CLAMP_DATA_DIR_ROOT  / "processed"
 

@@ -9,9 +9,9 @@ from semantic_parsing_with_constrained_lm.model import DataRetriever
 from semantic_parsing_with_constrained_lm.datum import DatumSub, FullDatumSub, FullDatum
 from semantic_parsing_with_constrained_lm.index.exact_match_index import ExactMatchIndex
 
-from ambiguous_parsing.generation.fixtures.nps import PLURAL_NP_TO_SINGULAR
-from ambiguous_parsing.generation.fixtures.vps import VPS_MAP, INTRANSITIVE_VPS_FOR_BOUND
-
+#from ambiguous_parsing.generation.fixtures.nps import PLURAL_NP_TO_SINGULAR
+#from ambiguous_parsing.generation.fixtures.vps import VPS_MAP, INTRANSITIVE_VPS_FOR_BOUND
+#
 class LampGeneralizationRetriever(DataRetriever[FullDatumSub, DatumSub]): 
     def __init__(
         self,

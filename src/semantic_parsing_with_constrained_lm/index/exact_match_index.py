@@ -16,8 +16,6 @@ from semantic_parsing_with_constrained_lm.index import Candidate, DynamicIndex, 
 from semantic_parsing_with_constrained_lm.model import DataRetriever
 from semantic_parsing_with_constrained_lm.index.bm25_index import PromptSchema
 
-from ambiguous_parsing.generation.fixtures.nps import NPS_MAP, VISUAL_INSTRUMENT_NPS, TACTILE_INSTRUMENT_NPS
-from ambiguous_parsing.generation.fixtures.vps import VISUAL_VPS, TACTILE_VPS, INTRANSITIVE_VPS, INTRANSITIVE_VPS_FOR_BOUND, VPS_MAP
 
 
 class ExactMatchIndex(Generic[Query, Candidate], DynamicIndex[int, Query, Candidate]):

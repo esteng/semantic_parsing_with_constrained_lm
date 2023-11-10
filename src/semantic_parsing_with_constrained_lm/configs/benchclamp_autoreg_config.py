@@ -6,7 +6,6 @@ Config to run evaluation experiments with BenchCLAMP with GPT-3 based language m
 approach.
 """
 import pdb 
-import copy
 import functools
 import itertools
 import sys
@@ -43,13 +42,12 @@ from semantic_parsing_with_constrained_lm.domains.benchclamp_data_setup import (
     BenchClampDatasetConfig,
     ClampDataConfig,
 )
-from semantic_parsing_with_constrained_lm.configs.benchclamp_config import extend_data_configs
 from semantic_parsing_with_constrained_lm.domains.lispress_v2.lispress_exp import TopKLispressMatch
 from semantic_parsing_with_constrained_lm.domains.overnight import OutputType, OvernightPieces
 from semantic_parsing_with_constrained_lm.eval import Metric, TopKExactMatch
 from semantic_parsing_with_constrained_lm.fit_max_steps import compute_and_print_fit
 from semantic_parsing_with_constrained_lm.lm_gpt2 import Seq2SeqGPT2, IncrementalGPT2
-from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE, BENCH_CLAMP_PROCESSED_DATA_DIR
+from semantic_parsing_with_constrained_lm.paths import OVERNIGHT_DATA_DIR_AZURE
 from semantic_parsing_with_constrained_lm.run_exp import Experiment
 from semantic_parsing_with_constrained_lm.finetune.lm_finetune import TrainExperiment
 
@@ -60,16 +58,12 @@ from semantic_parsing_with_constrained_lm.train_model_setup import (
     CodeT5ModelConfig,
     GPT2ModelConfig,
     T5ModelConfig,
-    LlamaModelConfig,
-    StarCoderModelConfig,
 )
 from semantic_parsing_with_constrained_lm.configs.benchclamp_config import HUGGINGFACE_MODEL_DIR
 
-# LOG_DIR = Path("logs/")
-# VERSION = "1.10"
+LOG_DIR = Path("logs/")
+VERSION = "1.10"
 
-LOG_DIR = Path("/brtx/602-nvme1//estengel/ambiguous_parsing/logs")
-VERSION = "1.0"
 
 BEAM_SIZE = 5
 # SEARCH_MAX_STEPS = 500
@@ -87,7 +81,7 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         model_id="codegen-2B",
         model_loc=HUGGINGFACE_MODEL_DIR / "codegen-2B",
         device_map={0: list(range(15)), 1: list(range(15, 32))}
-        if torch.cuda.device_count() == 2
+        if torch.cuda.device_count() >= 2
         else {0: list(range(8)),
         1: list(range(8,16)),
         2: list(range(16,24)),
@@ -102,17 +96,6 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         6: list(range(24,28)),
         7: list(range(28,32))}
         if torch.cuda.device_count() == 8
-        else {0: list(range(2)),
-        1: list(range(2,6)),
-        2: list(range(6,9)),
-        3: list(range(9,12)),
-        4: list(range(12,15)),
-        5: list(range(15,18)),
-        6: list(range(18,22)),
-        7: list(range(22,27)),
-        8: list(range(27,30)),
-        9: list(range(30,32))}
-        if torch.cuda.device_count() == 10
         else None,
     ),
     CodeGenModelConfig(
@@ -129,74 +112,8 @@ EVAL_MODEL_CONFIGS: List[ClampModelConfig] = [
         if torch.cuda.device_count() == 4
         else None,
     ),
-    LlamaModelConfig(
-        model_id="llama-7B",
-        model_loc=HUGGINGFACE_MODEL_DIR / "llama-7B",
-        device_map={0: list(range(15)), 1: list(range(15, 32))}
-        if torch.cuda.device_count() == 2
-        else {0: list(range(11)), 1: list(range(11, 22)), 2: list(range(22, 32))}
-        if torch.cuda.device_count() == 3
-        else {0: list(range(2)),
-        1: list(range(2,6)),
-        2: list(range(6,9)),
-        3: list(range(9,12)),
-        4: list(range(12,15)),
-        5: list(range(15,18)),
-        6: list(range(18,22)),
-        7: list(range(22,27)),
-        8: list(range(27,30)),
-        9: list(range(30,32))}
-        if torch.cuda.device_count() == 10
-        else None,
-    ),
-    LlamaModelConfig(
-        model_id="llama-30B",
-        model_loc=HUGGINGFACE_MODEL_DIR / "llama-30B",
-        device_map = {0: list(range(15)), 1: list(range(15, 30)), 2: list(range(30, 45)), 3: list(range(45, 60))}
-        if torch.cuda.device_count() == 4
-        else None,
-    ),
-    LlamaModelConfig(
-        model_id="llama-13B",
-        model_loc=HUGGINGFACE_MODEL_DIR / "llama-13B",
-        device_map = {0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
-        if torch.cuda.device_count() == 4
-        else None,
-    ),
-    LlamaModelConfig(
-        model_id="vicuna-13B",
-        model_loc=HUGGINGFACE_MODEL_DIR / "vicuna-13B",
-        device_map = {0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
-        if torch.cuda.device_count() == 4
-        else None,
-    ),
-    StarCoderModelConfig(
-        model_id='starcoder-15B',
-        model_loc=HUGGINGFACE_MODEL_DIR / "starcoder-15B",
-        device_map={0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
-        if torch.cuda.device_count() == 4
-        else None,
-    ),
-    StarCoderModelConfig(
-        model_id='santacoder-1B',
-        model_loc=HUGGINGFACE_MODEL_DIR / "santacoder-1B",
-        device_map={0: list(range(10)), 1: list(range(10, 20)), 2: list(range(20, 30)), 3: list(range(30, 40))}
-        if torch.cuda.device_count() == 4
-        else None,
-    )
-
     ]
 
-def get_zero_one_ratio(exp_name):
-    if exp_name[0].isdigit():
-        split_name = exp_name.split("-")
-        ratio_hundred_zero, ratio_hundred_one = split_name[0:2]
-        ratio_zero = float(ratio_hundred_zero)/100
-        ratio_one = float(ratio_hundred_one)/100
-        assert(ratio_zero + ratio_one == 1.0) 
-        return ratio_zero
-    else:
-        return None
 
 def create_eval_exp(
     exp_name: str,
@@ -205,14 +122,15 @@ def create_eval_exp(
     problem_type: Literal["constrained", "unconstrained-beam", "unconstrained-greedy"],
     is_dev: bool,
     prompt_order: PromptOrder,
-    num_prompts: Any,
+    perc_refactored: float,
 ) -> Experiment:
 
-    train_data, dev_data, test_data = data_config.setup_data()
+    train_data_refactored, train_data_original, dev_data, test_data = data_config.setup_data()
     # lm = IncrementalOpenAIGPT3(engine=open_ai_model_name)
+
     model, tokenizer, _ = model_config.setup_model()
     data_config.tokenizer = tokenizer
-    train_data, dev_data, test_data = data_config.setup_data()
+    train_data_refactored, train_data_original, dev_data, test_data = data_config.setup_data()
 
 
     lm = IncrementalGPT2(
@@ -265,7 +183,9 @@ def create_eval_exp(
                 partial_parse_builder = lambda _: partial_parse
 
             parser = make_semantic_parser(
-                train_data,
+                train_data_refactored,
+                train_data_original,
+                perc_refactored,
                 lm,  # type: ignore
                 False,
                 max_steps,
@@ -288,7 +208,7 @@ def create_eval_exp(
         else:
             # Everything other than Overnight in BenchClamp
             train_length_pairs = []
-            for datum in train_data:
+            for datum in train_data_original:
                 num_input_tokens = len(tokenizer.tokenize(datum.natural))
                 num_output_tokens = len(tokenizer.tokenize(datum.canonical)) + 1
                 train_length_pairs.append((num_input_tokens, num_output_tokens))
@@ -309,33 +229,19 @@ def create_eval_exp(
                 1000,
             )
 
-            is_fol = "_fol" in data_config.data_id
-            exp_type = "regular" if data_config.dataset_name[0].isdigit() else "generalize"
-            if exp_type == "generalize":
-                baseline_type = num_prompts
-                num_prompts = 3
-            else:
-                baseline_type = None 
-
-            zero_one_ratio = get_zero_one_ratio(data_config.dataset_name)
-
             parser = make_semantic_parser(
-                train_data=train_data,  # type: ignore
+                train_data_refactored=train_data_refactored,  # type: ignore
+                train_data_original=train_data_original,  # type: ignore
+                perc_refactored=perc_refactored,  # type: ignore
                 lm=lm,  # type: ignore
                 use_gpt3=False,
-                use_api=False,
-                data_id=data_config.data_id,
                 global_max_steps=SEARCH_MAX_STEPS,
                 beam_size=beam_size,
                 partial_parse_builder=partial_parse_builder,
                 max_steps_fn=max_steps_fn,
                 similarity_method=BM25Indexer(),
                 prompt_order=prompt_order,
-                num_examples_per_prompt=num_prompts,
-                is_fol=is_fol,
-                exp_type=exp_type,
-                zero_one_ratio=zero_one_ratio,
-                baseline_type=baseline_type,
+                num_examples_per_prompt=5,
             )
 
             metrics: Dict[str, Metric[Sequence[str], FullDatum]] = {
@@ -375,9 +281,6 @@ def create_eval_exp(
 def create_exps_dict() -> Tuple[
     Dict[str, Callable[[], TrainExperiment]], Dict[str, Callable[[], Experiment]]
 ]:
-    data_configs = copy.deepcopy(BENCHCLAMP_DATA_CONFIGS)
-    data_configs = extend_data_configs(data_configs, BENCH_CLAMP_PROCESSED_DATA_DIR)
-
     train_exps_dict: Dict[str, Callable[[], TrainExperiment]] = {}
     eval_exps_dict: Dict[str, Callable[[], Experiment]] = {}
     for (
@@ -386,22 +289,19 @@ def create_exps_dict() -> Tuple[
         is_dev,
         constrained,
         prompt_order,
-        num_prompts,
+        perc_refactored,
     ) in itertools.product(
-        data_configs,
-        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B", 
-         "llama-7B", "llama-13B", "llama-30B", "starcoder-15B", 
-         "santacoder-1B", "vicuna-13B"),
+        BENCHCLAMP_DATA_CONFIGS,
+        ("codegen-350M", "codegen-2B", "codegen-6B", "codegen-16B"),
         (True, False),
         ("constrained", "unconstrained-beam", "unconstrained-greedy"),
         PromptOrder,
-        (6, 10, "baseline_instrument", "baseline_possessive", "full") 
+        [perc/10 for perc in range(10)]
     ):
         dev_or_test = "dev" if is_dev else "test"
         eval_exp_name = (
             f"{open_ai_model}_{data_config.data_id}_{prompt_order.value}_{dev_or_test}_"
-            f"eval_{constrained}_bs_{BEAM_SIZE}"
-            f"_np_{num_prompts}"
+            f"eval_{constrained}_bs_{BEAM_SIZE}_{perc_refactored}"
         )
 
         # get the right config 
@@ -414,7 +314,7 @@ def create_exps_dict() -> Tuple[
             constrained,  # type: ignore
             is_dev=is_dev,
             prompt_order=prompt_order,
-            num_prompts=num_prompts,
+            perc_refactored=perc_refactored,
         )
 
     return train_exps_dict, eval_exps_dict

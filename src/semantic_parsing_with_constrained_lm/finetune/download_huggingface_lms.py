@@ -65,10 +65,10 @@ def main():
 
     # CodeGen
     for model_id, huggingface_model_id in [
-        # ("codegen-350M", "Salesforce/codegen-350M-mono"),
-        #  ("codegen-2B", "Salesforce/codegen-2B-mono"),
+        ("codegen-350M", "Salesforce/codegen-350M-mono"),
+        #("codegen-2B", "Salesforce/codegen-2B-mono"),
         #("codegen-6B", "Salesforce/codegen-6B-mono")
-         ("codegen-16B", "Salesforce/codegen-16B-mono"),
+        # ("codegen-16B", "Salesforce/codegen-16B-mono"),
     ]:
         print(f"Downloading {model_id} ...")
         model = AutoModelForCausalLM.from_pretrained(huggingface_model_id)
